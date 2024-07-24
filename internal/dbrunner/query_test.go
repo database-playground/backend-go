@@ -271,7 +271,7 @@ func TestRunQuery(t *testing.T) {
 					name TEXT
 				);
 
-				INSERT INTO test VALUES(1,NULL);
+				INSERT INTO test VALUES (1, NULL);
 				`,
 			Query: "SELECT * FROM test;",
 		}

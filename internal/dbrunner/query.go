@@ -40,10 +40,9 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 
 	output := Output{}
 	for rows.Next() {
-		var values []any
-		for range cols {
-			var value any
-			values = append(values, &value)
+		values := make([]any, len(cols))
+		for i := range values {
+			values[i] = new(NullableStringScanner)
 		}
 
 		err := rows.Scan(values...)
@@ -56,19 +55,12 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 			Value  *string
 		}
 		for i, col := range cols {
-			var value *string
-			if values[i] != nil {
-				value = lo.ToPtr(fmt.Sprint(*values[i].(*any)))
-			} else {
-				value = nil
-			}
-
 			row = append(row, struct {
 				Column string
 				Value  *string
 			}{
 				Column: col,
-				Value:  value,
+				Value:  values[i].(*NullableStringScanner).Value(),
 			})
 		}
 
@@ -89,3 +81,23 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 
 	return output, nil
 }
+
+type NullableStringScanner struct {
+	value *string
+}
+
+func (n *NullableStringScanner) Scan(value any) error {
+	if value == nil {
+		n.value = nil
+		return nil
+	}
+
+	n.value = lo.ToPtr(fmt.Sprintf("%v", value))
+	return nil
+}
+
+func (n *NullableStringScanner) Value() *string {
+	return n.value
+}
+
+var _ sql.Scanner = &NullableStringScanner{}
