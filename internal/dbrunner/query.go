@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	_ "modernc.org/sqlite"
+	"github.com/samber/lo"
+	"modernc.org/sqlite"
 )
 
 const timeoutSecond = 1
@@ -52,22 +53,22 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 
 		var row []struct {
 			Column string
-			Value  string
+			Value  *string
 		}
 		for i, col := range cols {
-			var value any
+			var value *string
 			if values[i] != nil {
-				value = *values[i].(*any)
+				value = lo.ToPtr(fmt.Sprint(*values[i].(*any)))
 			} else {
 				value = nil
 			}
 
 			row = append(row, struct {
 				Column string
-				Value  string
+				Value  *string
 			}{
 				Column: col,
-				Value:  fmt.Sprint(value),
+				Value:  value,
 			})
 		}
 
@@ -76,6 +77,11 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 	if err := rows.Err(); err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			return Output{}, fmt.Errorf("query timeout: %w", err)
+		}
+
+		var sqliteError *sqlite.Error
+		if errors.As(err, &sqliteError) {
+			return Output{}, fmt.Errorf("sqlite error: %w", err)
 		}
 
 		return Output{}, fmt.Errorf("rows error: %w", err)

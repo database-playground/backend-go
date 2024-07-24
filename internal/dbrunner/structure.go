@@ -8,6 +8,6 @@ type Input struct {
 type Output struct {
 	Result [][]struct {
 		Column string
-		Value  string
+		Value  *string
 	} `json:"result"`
 }

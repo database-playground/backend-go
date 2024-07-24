@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/database-playground/backend/internal/dbrunner"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,15 +33,15 @@ func TestRunQuery(t *testing.T) {
 		assert.Equal(t, dbrunner.Output{
 			Result: [][]struct {
 				Column string
-				Value  string
+				Value  *string
 			}{
 				{
-					{Column: "id", Value: "1"},
-					{Column: "name", Value: "Alice"},
+					{Column: "id", Value: lo.ToPtr("1")},
+					{Column: "name", Value: lo.ToPtr("Alice")},
 				},
 				{
-					{Column: "id", Value: "2"},
-					{Column: "name", Value: "Bob"},
+					{Column: "id", Value: lo.ToPtr("2")},
+					{Column: "name", Value: lo.ToPtr("Bob")},
 				},
 			},
 		}, output)
@@ -110,11 +111,11 @@ func TestRunQuery(t *testing.T) {
 		assert.Equal(t, dbrunner.Output{
 			Result: [][]struct {
 				Column string
-				Value  string
+				Value  *string
 			}{
 				{
-					{Column: "id", Value: "1"},
-					{Column: "name", Value: "Charlie"},
+					{Column: "id", Value: lo.ToPtr("1")},
+					{Column: "name", Value: lo.ToPtr("Charlie")},
 				},
 			},
 		}, output)
@@ -140,15 +141,15 @@ func TestRunQuery(t *testing.T) {
 		assert.Equal(t, dbrunner.Output{
 			Result: [][]struct {
 				Column string
-				Value  string
+				Value  *string
 			}{
 				{
-					{Column: "id", Value: "1"},
-					{Column: "name", Value: "Charlie"},
+					{Column: "id", Value: lo.ToPtr("1")},
+					{Column: "name", Value: lo.ToPtr("Charlie")},
 				},
 				{
-					{Column: "id", Value: "2"},
-					{Column: "name", Value: "Bob"},
+					{Column: "id", Value: lo.ToPtr("2")},
+					{Column: "name", Value: lo.ToPtr("Bob")},
 				},
 			},
 		}, output)
@@ -241,5 +242,53 @@ func TestRunQuery(t *testing.T) {
 
 		_, err := dbrunner.RunQuery(ctx, input)
 		assert.ErrorIs(t, err, context.Canceled)
+	})
+
+	t.Run("with invalid schema, it should return an error", func(t *testing.T) {
+		input := dbrunner.Input{
+			Init: `
+				CREATE TABLE test (
+					id INTEGER PRIMARY KEY,
+					name TEXT
+				);
+
+				INSERT INTO unknown_table (name) VALUES ('Alice');
+				`,
+			Query: "SELECT * FROM test;",
+		}
+
+		_, err := dbrunner.RunQuery(context.Background(), input)
+		require.Error(t, err)
+
+		assert.Contains(t, err.Error(), "exec init")
+	})
+
+	t.Run("with nil return, the cell should be <nil>", func(t *testing.T) {
+		input := dbrunner.Input{
+			Init: `
+				CREATE TABLE test (
+					id INTEGER PRIMARY KEY,
+					name TEXT
+				);
+
+				INSERT INTO test VALUES(1,NULL);
+				`,
+			Query: "SELECT * FROM test;",
+		}
+
+		output, err := dbrunner.RunQuery(context.Background(), input)
+		require.NoError(t, err)
+
+		assert.Equal(t, dbrunner.Output{
+			Result: [][]struct {
+				Column string
+				Value  *string
+			}{
+				{
+					{Column: "id", Value: lo.ToPtr("1")},
+					{Column: "name", Value: nil},
+				},
+			},
+		}, output)
 	})
 }
