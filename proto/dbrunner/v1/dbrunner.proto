@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package dbrunner.v1;
+
+import "common/v1/common.proto";
+
+service DbRunnerService {
+    // RunQuery runs the given query on the given schema and returns the results.
+    //
+    // Note that the schema and query will be standardize (in another words, formatted)
+    // before being executed. The execution result will also be cached (LRU).
+    rpc RunQuery(RunQueryRequest) returns (stream RunQueryResponse) {}
+}
+
+message RunQueryRequest {
+    // schema is the initialization SQL that creates the table, inserts the data, etc.
+    string schema = 1;
+    // query is the query to run.
+    string query = 2;
+}
+
+message RunQueryResponse {
+    // row is the result of the query.
+    repeated common.v1.StringPair row = 1;
+}
