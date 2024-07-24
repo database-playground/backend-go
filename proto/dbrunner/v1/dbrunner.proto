@@ -20,6 +20,5 @@ message RunQueryRequest {
 }
 
 message RunQueryResponse {
-    // row is the result of the query.
-    repeated common.v1.StringPair row = 1;
+    repeated common.v1.OptionalStringPair rows = 1;
 }
