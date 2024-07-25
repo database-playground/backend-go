@@ -1,7 +1,8 @@
 {
     "CN": "database-playground.internal",
     "hosts": [
-        "db-runner.database-playground.internal"
+        "db-runner.database-playground.internal",
+        "localhost"
     ],
     "key": {
         "algo": "ecdsa",
