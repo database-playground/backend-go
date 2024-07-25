@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"flag"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"connectrpc.com/connect"
@@ -22,7 +25,38 @@ func main() {
 		panic("schema and query are required")
 	}
 
-	client := dbrunnerv1connect.NewDbRunnerServiceClient(http.DefaultClient, *baseURL)
+	httpClient := http.DefaultClient
+
+	// add TLS certificate to the client if CLIENT_TLS_CERT_FILE is set
+	if certFile := os.Getenv("CLIENT_TLS_CERT_FILE"); certFile != "" {
+		cert, err := tls.LoadX509KeyPair(certFile, os.Getenv("CLIENT_TLS_KEY_FILE"))
+		if err != nil {
+			panic(err)
+		}
+		transport := &http.Transport{
+			TLSClientConfig: &tls.Config{
+				Certificates: []tls.Certificate{cert},
+			},
+		}
+
+		// if TLS_CA_CERT_FILE is set, we should add it to the root CA chain
+		if caFile := os.Getenv("TLS_CA_CERT_FILE"); caFile != "" {
+			caCert, err := os.ReadFile(caFile)
+			if err != nil {
+				panic(err)
+			}
+			caCertPool := x509.NewCertPool()
+			caCertPool.AppendCertsFromPEM(caCert)
+			transport.TLSClientConfig.RootCAs = caCertPool
+		}
+
+		httpClient.Transport = transport
+
+		// change baseURL to https if TLS is enabled
+		*baseURL = strings.Replace(*baseURL, "http://", "https://", 1)
+	}
+
+	client := dbrunnerv1connect.NewDbRunnerServiceClient(httpClient, *baseURL)
 	mainQueryResponse, err := client.RunQuery(context.Background(), connect.NewRequest(&dbrunnerv1.RunQueryRequest{
 		Schema: *schema,
 		Query:  *query,
