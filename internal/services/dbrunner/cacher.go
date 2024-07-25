@@ -18,12 +18,12 @@ const (
 	outputHashPrefix = "dbrunner:sql-output:"
 )
 
-type cacheModule struct {
+type CacheModule struct {
 	redis *redis.Client
 }
 
-func newCacheModule(redis *redis.Client) *cacheModule {
-	return &cacheModule{
+func NewCacheModule(redis *redis.Client) *CacheModule {
+	return &CacheModule{
 		redis: redis,
 	}
 }
@@ -31,7 +31,7 @@ func newCacheModule(redis *redis.Client) *cacheModule {
 // GetOutputHash returns the output hash of the input hash.
 //
 // The input hash is better to be [dbrunner.Input.Normalize]d.
-func (c *cacheModule) GetOutputHash(ctx context.Context, inputHash string) (outputHash string, err error) {
+func (c *CacheModule) GetOutputHash(ctx context.Context, inputHash string) (outputHash string, err error) {
 	key := inputHashPrefix + inputHash
 
 	result := c.redis.GetEx(ctx, key, time.Hour*1)
@@ -55,21 +55,17 @@ func (c *cacheModule) GetOutputHash(ctx context.Context, inputHash string) (outp
 //
 // It does not unmarshal the output, therefore it is much faster than
 // [cacheModule.getOutput] if you don't need the output.
-func (c *cacheModule) HasOutput(ctx context.Context, outputHash string) bool {
+func (c *CacheModule) HasOutput(ctx context.Context, outputHash string) bool {
 	key := outputHashPrefix + outputHash
 
-	result := c.redis.Exists(ctx, key)
-	if result.Err() != nil {
-		return false
-	}
-
-	return result.Val() == 1
+	result := c.redis.GetEx(ctx, key, time.Hour*1)
+	return result.Err() == nil
 }
 
 // GetOutput returns the output of the output hash.
 //
 // It is better to use [cacheModule.HasOutput] if you don't need the output.
-func (c *cacheModule) GetOutput(ctx context.Context, outputHash string) (output *dbrunner.Output, err error) {
+func (c *CacheModule) GetOutput(ctx context.Context, outputHash string) (output *dbrunner.Output, err error) {
 	key := outputHashPrefix + outputHash
 
 	result := c.redis.GetEx(ctx, key, time.Hour*1)
@@ -90,7 +86,7 @@ func (c *cacheModule) GetOutput(ctx context.Context, outputHash string) (output 
 }
 
 // writeOutput writes (overrides) the output to the cache.
-func (c *cacheModule) writeOutput(ctx context.Context, output dbrunner.Output) (hash string, err error) {
+func (c *CacheModule) writeOutput(ctx context.Context, output dbrunner.Output) (hash string, err error) {
 	hash, err = output.Hash()
 	if err != nil {
 		return "", err
@@ -102,7 +98,7 @@ func (c *cacheModule) writeOutput(ctx context.Context, output dbrunner.Output) (
 		return "", err
 	}
 
-	err = c.redis.SetEx(ctx, key, outputMarshaled, time.Hour*1).Err()
+	err = c.redis.SetEx(ctx, key, string(outputMarshaled), time.Hour*1).Err()
 	if err != nil {
 		return "", err
 	}
@@ -111,7 +107,7 @@ func (c *cacheModule) writeOutput(ctx context.Context, output dbrunner.Output) (
 }
 
 // reuseOrWriteOutput reuses the output if it is existed, otherwise writes it.
-func (c *cacheModule) reuseOrWriteOutput(ctx context.Context, output dbrunner.Output) (hash string, err error) {
+func (c *CacheModule) reuseOrWriteOutput(ctx context.Context, output dbrunner.Output) (hash string, err error) {
 	hash, err = output.Hash()
 	if err != nil {
 		return "", err
@@ -125,7 +121,7 @@ func (c *cacheModule) reuseOrWriteOutput(ctx context.Context, output dbrunner.Ou
 }
 
 // writeInput writes the input with its output hash map to the cache.
-func (c *cacheModule) writeInput(ctx context.Context, input dbrunner.Input, outputHash string) (hash string, err error) {
+func (c *CacheModule) writeInput(ctx context.Context, input dbrunner.Input, outputHash string) (hash string, err error) {
 	normalizedInput, err := input.Normalize()
 	if err != nil {
 		return "", err
@@ -143,7 +139,7 @@ func (c *cacheModule) writeInput(ctx context.Context, input dbrunner.Input, outp
 }
 
 // WriteToCache writes the input and output to the cache.
-func (c *cacheModule) WriteToCache(ctx context.Context, input dbrunner.Input, output dbrunner.Output) (hash string, err error) {
+func (c *CacheModule) WriteToCache(ctx context.Context, input dbrunner.Input, output dbrunner.Output) (hash string, err error) {
 	outputHash, err := c.reuseOrWriteOutput(ctx, output)
 	if err != nil {
 		return "", err

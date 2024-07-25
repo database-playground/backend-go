@@ -5,6 +5,7 @@ go 1.22.5
 require (
 	connectrpc.com/connect v1.16.2
 	github.com/DataDog/go-sqllexer v0.0.12
+	github.com/go-redis/redismock/v9 v9.2.0
 	github.com/redis/go-redis/v9 v9.6.0
 	github.com/samber/lo v1.46.0
 	github.com/stretchr/testify v1.9.0

@@ -9,7 +9,7 @@ import (
 )
 
 type Service struct {
-	cacheModule *cacheModule
+	cacheModule *CacheModule
 
 	dbrunnerv1connect.UnimplementedDbRunnerServiceHandler
 }
@@ -39,7 +39,7 @@ func New(optfns ...OptionFn) *Service {
 	})
 
 	return &Service{
-		cacheModule: newCacheModule(redis),
+		cacheModule: NewCacheModule(redis),
 	}
 }
 
