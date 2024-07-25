@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 
@@ -58,12 +57,12 @@ var FxModule = fx.Module("generic-http-server", fx.Provide(createTLSCertificate)
 
 	lc.Append(fx.Hook{
 		OnStart: func(context.Context) error {
-			ln, err := net.Listen("tcp", srv.Addr)
-			if err != nil {
-				return err
-			}
 			go func() {
-				_ = srv.ServeTLS(ln, "", "")
+				if cert == nil {
+					_ = srv.ListenAndServe()
+				} else {
+					_ = srv.ListenAndServeTLS("", "")
+				}
 			}()
 			fmt.Printf("starting server at %s%s\n", listenedOn, handler.RpcPath)
 			return nil
