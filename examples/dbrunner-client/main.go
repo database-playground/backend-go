@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -22,7 +23,7 @@ func main() {
 	}
 
 	client := dbrunnerv1connect.NewDbRunnerServiceClient(http.DefaultClient, *baseURL)
-	stream, err := client.RunQuery(context.Background(), connect.NewRequest(&dbrunnerv1.RunQueryRequest{
+	mainQueryResponse, err := client.RunQuery(context.Background(), connect.NewRequest(&dbrunnerv1.RunQueryRequest{
 		Schema: *schema,
 		Query:  *query,
 	}))
@@ -30,27 +31,46 @@ func main() {
 		panic(err)
 	}
 
-	headerPrinted := false
+	if errMessage := mainQueryResponse.Msg.GetError(); errMessage != "" {
+		panic(errMessage)
+	}
+
+	fmt.Printf("\x1b[90mINPUT_HASH: %v\x1b[0m\n", mainQueryResponse.Msg.GetId())
+
+	// retrieve all the rows
+	stream, err := client.RetrieveQuery(context.Background(), connect.NewRequest(&dbrunnerv1.RetrieveQueryRequest{
+		Id: mainQueryResponse.Msg.GetId(),
+	}))
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("\x1b[90mOUTPUT_HASH: %v\x1b[0m\n", stream.ResponseHeader().Get("output-hash"))
 
 	for stream.Receive() {
-		resp := stream.Msg()
+		switch msg := stream.Msg().GetKind().(type) {
+		case *dbrunnerv1.RetrieveQueryResponse_Header:
+			header := msg.Header
 
-		header := []string{}
-		content := []string{}
-		for _, row := range resp.Rows {
-			header = append(header, row.Key)
-			if row.Value != nil {
-				content = append(content, *row.Value)
-			} else {
-				content = append(content, "\x1b[3mNULL\x1b[0m")
+			fmt.Println("\x1b[1m" + strings.Join(header.Header, "\t") + "\x1b[0m")
+		case *dbrunnerv1.RetrieveQueryResponse_Row:
+			row := msg.Row
+
+			for i, cell := range row.Cells {
+				if i > 0 {
+					fmt.Print("\t")
+				}
+				if cell.Value == nil {
+					fmt.Print("\x1b[3mNULL\x1b[0m")
+				} else {
+					fmt.Print(*cell.Value)
+				}
+
+				if i == len(row.Cells)-1 {
+					fmt.Println()
+				}
 			}
 		}
-
-		if !headerPrinted {
-			headerPrinted = true
-			println("\x1b[1m" + strings.Join(header, "\t") + "\x1b[0m")
-		}
-		println(strings.Join(content, "\t"))
 	}
 	if stream.Err() != nil {
 		panic(stream.Err())
