@@ -181,7 +181,7 @@ func TestRunQuery(t *testing.T) {
 		_, err := dbrunner.RunQuery(context.Background(), input)
 		require.Error(t, err)
 
-		assert.Contains(t, err.Error(), "query timeout")
+		assert.ErrorIs(t, err, context.DeadlineExceeded)
 	})
 
 	t.Run("with malformed query, it should return an error", func(t *testing.T) {

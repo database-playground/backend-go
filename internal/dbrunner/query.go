@@ -3,12 +3,11 @@ package dbrunner
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
 	"github.com/samber/lo"
-	"modernc.org/sqlite"
+	_ "modernc.org/sqlite"
 )
 
 const timeoutSecond = 1
@@ -67,15 +66,6 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 		output.Result = append(output.Result, row)
 	}
 	if err := rows.Err(); err != nil {
-		if errors.Is(err, context.DeadlineExceeded) {
-			return Output{}, fmt.Errorf("query timeout: %w", err)
-		}
-
-		var sqliteError *sqlite.Error
-		if errors.As(err, &sqliteError) {
-			return Output{}, fmt.Errorf("sqlite error: %w", err)
-		}
-
 		return Output{}, fmt.Errorf("rows error: %w", err)
 	}
 
