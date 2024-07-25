@@ -63,7 +63,7 @@ var FxModule = fx.Module("generic-http-server", fx.Provide(createTLSCertificate)
 				return err
 			}
 			go func() {
-				_ = srv.Serve(ln)
+				_ = srv.ServeTLS(ln, "", "")
 			}()
 			fmt.Printf("starting server at %s%s\n", listenedOn, handler.RpcPath)
 			return nil
@@ -78,7 +78,7 @@ var FxModule = fx.Module("generic-http-server", fx.Provide(createTLSCertificate)
 	})
 }))
 
-func createTLSCertificate(logger slog.Logger) (*tls.Certificate, error) {
+func createTLSCertificate(logger *slog.Logger) (*tls.Certificate, error) {
 	certFile := os.Getenv("TLS_CERT_FILE")
 	keyFile := os.Getenv("TLS_KEY_FILE")
 
@@ -95,7 +95,7 @@ func createTLSCertificate(logger slog.Logger) (*tls.Certificate, error) {
 	return &cert, nil
 }
 
-func createTLSCertPool(logger slog.Logger) (*x509.CertPool, error) {
+func createTLSCertPool(logger *slog.Logger) (*x509.CertPool, error) {
 	caFile := os.Getenv("TLS_CA_CERT_FILE")
 
 	if caFile == "" {
