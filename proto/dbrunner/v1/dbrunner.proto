@@ -2,9 +2,6 @@ syntax = "proto3";
 
 package dbrunner.v1;
 
-import "common/v1/common.proto";
-import "google/protobuf/empty.proto";
-
 service DbRunnerService {
     // RunQuery runs the given query on the given schema and returns the ID to retrieve
     // the result.
@@ -15,8 +12,6 @@ service DbRunnerService {
 
     // RetrieveQuery retrieves the rows of query that was run on the given schema.
     rpc RetrieveQuery(RetrieveQueryRequest) returns (stream RetrieveQueryResponse) {}
-    // DiffQuery retrieves the diff of the query that was run on the given schema.
-    rpc DiffQuery(DiffQueryRequest) returns (stream DiffQueryResponse) {}
     // IsQueriesSame checks if the two queries produce same result.
     //
     // It is much faster than DiffQuery since it only compares the hash.
@@ -67,37 +62,6 @@ message DataRow {
 
 message Cell {
     optional string value = 1;
-}
-
-enum RowProperty {
-    ROW_PROPERTY_UNSPECIFIED = 0;
-    // ROW_PROPERTY_HEADER means the row is the header of the table,
-    // and should be used for the header of the table.
-    ROW_PROPERTY_HEADER = 1;
-    // ROW_PROPERTY_BODY means the row is the body of the table,
-    // and should be used for the body of the table.
-    ROW_PROPERTY_BODY = 2;
-}
-
-message DiffQueryRequest {
-    string left_id = 1;
-    string right_id = 2;
-}
-
-// DiffQueryResponse is designed for side-by-side or inline comparison of two rows.
-// Note that it does not contain the cell-by-cell comparison. You should do it by yourself.
-// The comparsion is done by the first cell of the left and right rows.
-message DiffQueryResponse {
-    // left is the left row of the query result. Usually this is the correct answer.
-    // if there is no such line, it will be empty.
-    repeated common.v1.OptionalStringPair left = 1;
-
-    // right is the right row of the query result. Usually this is the answer from the user.
-    // if there is no such line, it will be empty.
-    repeated common.v1.OptionalStringPair right = 2;
-
-    // same is the flag that indicates whether the left and right rows are the same.
-    bool same = 3;
 }
 
 message AreQueriesOutputSameRequest {
