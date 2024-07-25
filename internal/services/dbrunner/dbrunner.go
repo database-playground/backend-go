@@ -8,22 +8,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type DBRunnerService struct {
+type Service struct {
 	cacheModule *cacheModule
 
 	dbrunnerv1connect.UnimplementedDbRunnerServiceHandler
 }
 
-type DBRunnerServiceOptions struct {
+type Options struct {
 	RedisAddr     string
 	RedisPassword string
 	RedisDB       int
 }
 
-type NewDBRunnerServiceOptionFn func(*DBRunnerServiceOptions)
+type OptionFn func(*Options)
 
-func NewDBRunnerService(optfns ...NewDBRunnerServiceOptionFn) *DBRunnerService {
-	options := &DBRunnerServiceOptions{}
+func New(optfns ...OptionFn) *Service {
+	options := &Options{}
 	for _, optfn := range optfns {
 		optfn(options)
 	}
@@ -38,31 +38,31 @@ func NewDBRunnerService(optfns ...NewDBRunnerServiceOptionFn) *DBRunnerService {
 		DB:       options.RedisDB,
 	})
 
-	return &DBRunnerService{
+	return &Service{
 		cacheModule: newCacheModule(redis),
 	}
 }
 
-func WithRedisAddr(addr string) NewDBRunnerServiceOptionFn {
-	return func(o *DBRunnerServiceOptions) {
+func WithRedisAddr(addr string) OptionFn {
+	return func(o *Options) {
 		o.RedisAddr = addr
 	}
 }
 
-func WithRedisPassword(password string) NewDBRunnerServiceOptionFn {
-	return func(o *DBRunnerServiceOptions) {
+func WithRedisPassword(password string) OptionFn {
+	return func(o *Options) {
 		o.RedisPassword = password
 	}
 }
 
-func WithRedisDB(db int) NewDBRunnerServiceOptionFn {
-	return func(o *DBRunnerServiceOptions) {
+func WithRedisDB(db int) OptionFn {
+	return func(o *Options) {
 		o.RedisDB = db
 	}
 }
 
-func WithRedisEnvironments() NewDBRunnerServiceOptionFn {
-	return func(o *DBRunnerServiceOptions) {
+func WithRedisEnvironments() OptionFn {
+	return func(o *Options) {
 		redisDBStr := os.Getenv("REDIS_DB")
 		if redisDBStr == "" {
 			redisDBStr = "0"

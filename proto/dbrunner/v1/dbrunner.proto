@@ -49,8 +49,8 @@ message RetrieveQueryRequest {
 }
 
 message RetrieveQueryResponse {
-    // rows is the row of the query result.
-    repeated common.v1.StringPair rows = 1;
+    // row is the row of the query result.
+    repeated common.v1.OptionalStringPair row = 1;
 }
 
 message DiffQueryRequest {

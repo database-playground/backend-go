@@ -10,7 +10,14 @@ import (
 	"modernc.org/sqlite"
 )
 
-func (s *DBRunnerService) RunQuery(ctx context.Context, request *connect.Request[dbrunnerv1.RunQueryRequest]) (*connect.Response[dbrunnerv1.RunQueryResponse], error) {
+func (s *Service) RunQuery(ctx context.Context, request *connect.Request[dbrunnerv1.RunQueryRequest]) (*connect.Response[dbrunnerv1.RunQueryResponse], error) {
+	if request.Msg.GetSchema() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("schema is required"))
+	}
+	if request.Msg.GetQuery() == "" {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("query is required"))
+	}
+
 	input := dbrunner.Input{
 		Init:  request.Msg.GetSchema(),
 		Query: request.Msg.GetQuery(),

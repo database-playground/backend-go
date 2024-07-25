@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	path, handler := dbrunnerv1connect.NewDbRunnerServiceHandler(dbrunnerservice.NewDBRunnerService())
+	path, handler := dbrunnerv1connect.NewDbRunnerServiceHandler(dbrunnerservice.New())
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
