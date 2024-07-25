@@ -35,11 +35,10 @@ func (c *CacheModule) GetOutputHash(ctx context.Context, inputHash string) (outp
 	key := inputHashPrefix + inputHash
 
 	result := c.redis.GetEx(ctx, key, time.Hour*1)
+	if result.Err() == redis.Nil {
+		return "", ErrNotFound
+	}
 	if result.Err() != nil {
-		if result.Err() == redis.Nil {
-			return "", ErrNotFound
-		}
-
 		return "", result.Err()
 	}
 

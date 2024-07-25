@@ -191,4 +191,34 @@ func TestWriteToCache(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, mockInputHash, hash)
 	})
+
+	t.Run("the written cache should be retrievable", func(t *testing.T) {
+		t.Parallel()
+
+		client, mock := redismock.NewClientMock()
+		cm := dbrunnerservice.NewCacheModule(client)
+
+		mock.MatchExpectationsInOrder(true)
+		mock.ExpectGetEx("dbrunner:sql-output:"+mockOutputHash, 1*time.Hour).SetErr(redis.Nil)
+		mock.ExpectSetEx("dbrunner:sql-output:"+mockOutputHash, string(lo.Must(json.Marshal(mockOutput))), 1*time.Hour).SetVal("OK")
+		mock.ExpectSetEx("dbrunner:sql-input:"+mockInputHash, mockOutputHash, 1*time.Hour).SetVal("OK")
+		mock.ExpectGetEx("dbrunner:sql-input:"+mockInputHash, 1*time.Hour).SetVal(mockOutputHash)
+		mock.ExpectGetEx("dbrunner:sql-output:"+mockOutputHash, 1*time.Hour).SetVal(string(lo.Must(json.Marshal(mockOutput))))
+
+		hash, err := cm.WriteToCache(context.TODO(), mockInput, mockOutput)
+		require.NoError(t, err)
+		assert.Equal(t, mockInputHash, hash)
+
+		outputHash, err := cm.GetOutputHash(context.TODO(), mockInputHash)
+		require.NoError(t, err)
+		assert.Equal(t, mockOutputHash, outputHash)
+
+		output, err := cm.GetOutput(context.TODO(), outputHash)
+		require.NoError(t, err)
+
+		// convert to json to workaround the nil issue
+		expectedJSON, _ := json.Marshal(mockOutput)
+		actualJSON, _ := json.Marshal(output)
+		assert.JSONEq(t, string(expectedJSON), string(actualJSON))
+	})
 }
