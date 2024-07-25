@@ -5,8 +5,8 @@ import (
 	"errors"
 
 	"connectrpc.com/connect"
-	commonv1 "github.com/database-playground/backend/gen/common/v1"
 	dbrunnerv1 "github.com/database-playground/backend/gen/dbrunner/v1"
+	"github.com/samber/lo"
 )
 
 func (s *Service) RetrieveQuery(ctx context.Context, request *connect.Request[dbrunnerv1.RetrieveQueryRequest], stream *connect.ServerStream[dbrunnerv1.RetrieveQueryResponse]) error {
@@ -30,18 +30,32 @@ func (s *Service) RetrieveQuery(ctx context.Context, request *connect.Request[db
 		return connect.NewError(connect.CodeInternal, err)
 	}
 
-	for _, resultRow := range output.Result {
-		rpcRow := make([]*commonv1.OptionalStringPair, 0, len(resultRow))
+	// Set output-hash in the header.
+	stream.ResponseHeader().Add("output-hash", outputHash)
 
-		for _, value := range resultRow {
-			rpcRow = append(rpcRow, &commonv1.OptionalStringPair{
-				Key:   value.Column,
-				Value: value.Value,
-			})
-		}
+	// Send header as the first packet
+	if err := stream.Send(&dbrunnerv1.RetrieveQueryResponse{
+		Kind: &dbrunnerv1.RetrieveQueryResponse_Header{
+			Header: &dbrunnerv1.HeaderRow{
+				Header: output.Header,
+			},
+		},
+	}); err != nil {
+		return err
+	}
 
+	// Send data rows one by one
+	for _, row := range output.Data {
 		if err := stream.Send(&dbrunnerv1.RetrieveQueryResponse{
-			Row: rpcRow,
+			Kind: &dbrunnerv1.RetrieveQueryResponse_Row{
+				Row: &dbrunnerv1.DataRow{
+					Cells: lo.Map(row, func(cell *string, _ int) *dbrunnerv1.Cell {
+						return &dbrunnerv1.Cell{
+							Value: cell,
+						}
+					}),
+				},
+			},
 		}); err != nil {
 			return err
 		}

@@ -79,11 +79,9 @@ func TestCacheModule_GetOutput(t *testing.T) {
 		t.Parallel()
 
 		expected := dbrunner.Output{
-			Result: [][]struct {
-				Column string
-				Value  *string
-			}{
-				{{Column: "column", Value: nil}, {Column: "column2", Value: lo.ToPtr("Hello!")}},
+			Header: []string{"column", "column2"},
+			Data: [][]*string{
+				{nil, lo.ToPtr("Hello!")},
 			},
 		}
 
@@ -119,12 +117,8 @@ func TestWriteToCache(t *testing.T) {
 		Query: "SELECT * FROM test;",
 	}.Normalize()
 	mockOutput := dbrunner.Output{
-		Result: [][]struct {
-			Column string
-			Value  *string
-		}{
-			{{Column: "id", Value: lo.ToPtr("1")}, {Column: "name", Value: lo.ToPtr("Hello!")}},
-		},
+		Header: []string{"id", "name"},
+		Data:   [][]*string{{lo.ToPtr("1"), lo.ToPtr("Hello!")}},
 	}
 
 	mockInputHash := mockInput.Hash()

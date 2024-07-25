@@ -3,6 +3,7 @@ syntax = "proto3";
 package dbrunner.v1;
 
 import "common/v1/common.proto";
+import "google/protobuf/empty.proto";
 
 service DbRunnerService {
     // RunQuery runs the given query on the given schema and returns the ID to retrieve
@@ -48,9 +49,34 @@ message RetrieveQueryRequest {
     string id = 1;
 }
 
+// RetrieveQueryResponse is a stream of rows of the query result.
 message RetrieveQueryResponse {
-    // row is the row of the query result.
-    repeated common.v1.OptionalStringPair row = 1;
+    oneof kind {
+        HeaderRow header = 1;
+        DataRow row = 2;
+    }
+}
+
+message HeaderRow {
+    repeated string header = 1;
+}
+
+message DataRow {
+    repeated Cell cells = 1;
+}
+
+message Cell {
+    optional string value = 1;
+}
+
+enum RowProperty {
+    ROW_PROPERTY_UNSPECIFIED = 0;
+    // ROW_PROPERTY_HEADER means the row is the header of the table,
+    // and should be used for the header of the table.
+    ROW_PROPERTY_HEADER = 1;
+    // ROW_PROPERTY_BODY means the row is the body of the table,
+    // and should be used for the body of the table.
+    ROW_PROPERTY_BODY = 2;
 }
 
 message DiffQueryRequest {
