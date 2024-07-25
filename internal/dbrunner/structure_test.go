@@ -47,67 +47,42 @@ func TestInput_Hash(t *testing.T) {
 
 func TestOutput_Hash(t *testing.T) {
 	a := Output{
-		Result: [][]struct {
-			Column string
-			Value  *string
-		}{
+		Header: []string{"COL1", "COL2"},
+		Data: [][]*string{
 			{
-				{
-					Column: "COL1",
-					Value:  nil,
-				},
-				{
-					Column: "COL2",
-					Value:  lo.ToPtr("Hello!"),
-				},
+				nil,
+				lo.ToPtr("Hello!"),
 			},
 		},
 	}
 
 	b := Output{
-		Result: [][]struct {
-			Column string
-			Value  *string
-		}{
+		Header: []string{"COL1", "COL2"},
+		Data: [][]*string{
 			{
-				{
-					Column: "COL1",
-					Value:  nil,
-				},
-				{
-					Column: "COL2",
-					Value:  lo.ToPtr("Hello!"),
-				},
+				nil,
+				lo.ToPtr("Hello!"),
 			},
 		},
 	}
 
 	c := Output{
-		Result: [][]struct {
-			Column string
-			Value  *string
-		}{
+		Header: []string{"COL1", "COL2"},
+		Data: [][]*string{
 			{
-				{
-					Column: "COL1",
-					Value:  nil,
-				},
-				{
-					Column: "COL2",
-					Value:  lo.ToPtr("Hello!"),
-				},
+				nil,
+				lo.ToPtr("Hello!"),
 			},
 			{
-				{
-					Column: "COL3",
-					Value:  lo.ToPtr("Hello!"),
-				},
+				lo.ToPtr("Hello!"),
+				nil,
 			},
 		},
 	}
 
 	d := Output{
-		Result: nil,
+		Header: nil,
+		Data:   nil,
 	}
 
 	if lo.Must(a.Hash()) != lo.Must(b.Hash()) {

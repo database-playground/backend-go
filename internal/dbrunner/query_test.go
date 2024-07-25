@@ -31,18 +31,10 @@ func TestRunQuery(t *testing.T) {
 		output, err := dbrunner.RunQuery(context.Background(), input)
 		require.NoError(t, err)
 		assert.Equal(t, dbrunner.Output{
-			Result: [][]struct {
-				Column string
-				Value  *string
-			}{
-				{
-					{Column: "id", Value: lo.ToPtr("1")},
-					{Column: "name", Value: lo.ToPtr("Alice")},
-				},
-				{
-					{Column: "id", Value: lo.ToPtr("2")},
-					{Column: "name", Value: lo.ToPtr("Bob")},
-				},
+			Header: []string{"id", "name"},
+			Data: [][]*string{
+				{lo.ToPtr("1"), lo.ToPtr("Alice")},
+				{lo.ToPtr("2"), lo.ToPtr("Bob")},
 			},
 		}, output)
 	})
@@ -65,7 +57,8 @@ func TestRunQuery(t *testing.T) {
 		output, err := dbrunner.RunQuery(context.Background(), input)
 		require.NoError(t, err)
 		assert.Equal(t, dbrunner.Output{
-			Result: nil,
+			Header: []string{},
+			Data:   [][]*string{},
 		}, output)
 	})
 
@@ -87,7 +80,8 @@ func TestRunQuery(t *testing.T) {
 		output, err := dbrunner.RunQuery(context.Background(), input)
 		require.NoError(t, err)
 		assert.Equal(t, dbrunner.Output{
-			Result: nil,
+			Header: []string{},
+			Data:   [][]*string{},
 		}, output)
 	})
 
@@ -109,14 +103,9 @@ func TestRunQuery(t *testing.T) {
 		output, err := dbrunner.RunQuery(context.Background(), input)
 		require.NoError(t, err)
 		assert.Equal(t, dbrunner.Output{
-			Result: [][]struct {
-				Column string
-				Value  *string
-			}{
-				{
-					{Column: "id", Value: lo.ToPtr("1")},
-					{Column: "name", Value: lo.ToPtr("Charlie")},
-				},
+			Header: []string{"id", "name"},
+			Data: [][]*string{
+				{lo.ToPtr("1"), lo.ToPtr("Charlie")},
 			},
 		}, output)
 	})
@@ -124,33 +113,32 @@ func TestRunQuery(t *testing.T) {
 	t.Run("even with UPDATE query, the SELECT query should still stay as schema does", func(t *testing.T) {
 		t.Parallel()
 
-		input := dbrunner.Input{
-			Init: `
-				CREATE TABLE test (
-					id INTEGER PRIMARY KEY,
-					name TEXT
-				);
+		initSQL := `
+			CREATE TABLE test (
+				id INTEGER PRIMARY KEY,
+				name TEXT
+			);
 
-				INSERT INTO test (name) VALUES ('Alice');
-				INSERT INTO test (name) VALUES ('Bob');
-			`,
-			Query: "UPDATE test SET name = 'Charlie' WHERE id = 1; SELECT * FROM test;",
-		}
-		output, err := dbrunner.RunQuery(context.Background(), input)
+			INSERT INTO test (name) VALUES ('Alice');
+			INSERT INTO test (name) VALUES ('Bob');
+		`
+
+		_, err := dbrunner.RunQuery(context.Background(), dbrunner.Input{
+			Init:  initSQL,
+			Query: "UPDATE test SET name = 'Charlie' WHERE id = 1;",
+		})
+		require.NoError(t, err)
+
+		output, err := dbrunner.RunQuery(context.Background(), dbrunner.Input{
+			Init:  initSQL,
+			Query: "SELECT * FROM test;",
+		})
 		require.NoError(t, err)
 		assert.Equal(t, dbrunner.Output{
-			Result: [][]struct {
-				Column string
-				Value  *string
-			}{
-				{
-					{Column: "id", Value: lo.ToPtr("1")},
-					{Column: "name", Value: lo.ToPtr("Charlie")},
-				},
-				{
-					{Column: "id", Value: lo.ToPtr("2")},
-					{Column: "name", Value: lo.ToPtr("Bob")},
-				},
+			Header: []string{"id", "name"},
+			Data: [][]*string{
+				{lo.ToPtr("1"), lo.ToPtr("Alice")},
+				{lo.ToPtr("2"), lo.ToPtr("Bob")},
 			},
 		}, output)
 	})
@@ -280,14 +268,9 @@ func TestRunQuery(t *testing.T) {
 		require.NoError(t, err)
 
 		assert.Equal(t, dbrunner.Output{
-			Result: [][]struct {
-				Column string
-				Value  *string
-			}{
-				{
-					{Column: "id", Value: lo.ToPtr("1")},
-					{Column: "name", Value: nil},
-				},
+			Header: []string{"id", "name"},
+			Data: [][]*string{
+				{lo.ToPtr("1"), nil},
 			},
 		}, output)
 	})

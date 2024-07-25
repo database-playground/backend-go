@@ -37,33 +37,33 @@ func RunQuery(ctx context.Context, input Input) (Output, error) {
 		return Output{}, fmt.Errorf("get columns: %w", err)
 	}
 
-	output := Output{}
+	output := Output{
+		Header: cols,
+		Data:   [][]*string{},
+	}
 	for rows.Next() {
-		values := make([]any, len(cols))
-		for i := range values {
-			values[i] = new(NullableStringScanner)
+		// Create the dynamic slice of pointers to interface{}
+		// so we can pass them to rows.Scan
+		rawCells := make([]any, len(cols))
+
+		// Fill the slice with pointer to the scanner.
+		// The scanner converts all the values to string, while
+		// leaves the nil values as nil.
+		for i := range rawCells {
+			rawCells[i] = new(NullableStringScanner)
 		}
 
-		err := rows.Scan(values...)
+		err := rows.Scan(rawCells...)
 		if err != nil {
 			break
 		}
 
-		var row []struct {
-			Column string
-			Value  *string
-		}
-		for i, col := range cols {
-			row = append(row, struct {
-				Column string
-				Value  *string
-			}{
-				Column: col,
-				Value:  values[i].(*NullableStringScanner).Value(),
-			})
+		cells := make([]*string, len(rawCells))
+		for i, cell := range rawCells {
+			cells[i] = cell.(*NullableStringScanner).Value()
 		}
 
-		output.Result = append(output.Result, row)
+		output.Data = append(output.Data, cells)
 	}
 	if err := rows.Err(); err != nil {
 		return Output{}, fmt.Errorf("rows error: %w", err)

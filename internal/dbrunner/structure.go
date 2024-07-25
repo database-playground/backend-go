@@ -3,7 +3,7 @@ package dbrunner
 import (
 	"crypto/sha256"
 	"encoding/ascii85"
-	"encoding/gob"
+	"encoding/json"
 )
 
 type Input struct {
@@ -42,17 +42,15 @@ func (i Input) Hash() string {
 }
 
 type Output struct {
-	Result [][]struct {
-		Column string
-		Value  *string
-	} `json:"result"`
+	Header []string    `json:"header"`
+	Data   [][]*string `json:"data"`
 }
 
 func (o Output) Hash() (string, error) {
 	hasher := sha256.New()
-	encoder := gob.NewEncoder(hasher)
+	encoder := json.NewEncoder(hasher)
 
-	err := encoder.Encode(o.Result)
+	err := encoder.Encode(o)
 	if err != nil {
 		return "", err
 	}
