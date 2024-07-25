@@ -1,62 +1,79 @@
 package dbrunnerservice
 
 import (
-	"context"
-	"strings"
+	"os"
+	"strconv"
 
-	"connectrpc.com/connect"
-	commonv1 "github.com/database-playground/backend/gen/common/v1"
-	dbrunnerv1 "github.com/database-playground/backend/gen/dbrunner/v1"
 	"github.com/database-playground/backend/gen/dbrunner/v1/dbrunnerv1connect"
-	"github.com/database-playground/backend/internal/dbrunner"
-	"github.com/samber/lo"
+	"github.com/redis/go-redis/v9"
 )
 
 type DBRunnerService struct {
+	cacheModule *cacheModule
+
 	dbrunnerv1connect.UnimplementedDbRunnerServiceHandler
 }
 
-func NewDBRunnerService() *DBRunnerService {
-	return &DBRunnerService{}
+type DBRunnerServiceOptions struct {
+	RedisAddr     string
+	RedisPassword string
+	RedisDB       int
 }
 
-func (s *DBRunnerService) RunQuery(ctx context.Context, request *connect.Request[dbrunnerv1.RunQueryRequest], stream *connect.ServerStream[dbrunnerv1.RunQueryResponse]) error {
-	input := dbrunner.Input{
-		Init:  request.Msg.GetSchema(),
-		Query: request.Msg.GetQuery(),
-	}
-	output, err := dbrunner.RunQuery(ctx, input)
-	if err != nil {
-		if strings.Contains(err.Error(), "query timeout") {
-			return connect.NewError(connect.CodeAborted, err)
-		}
+type NewDBRunnerServiceOptionFn func(*DBRunnerServiceOptions)
 
-		if strings.Contains(err.Error(), "exec init") ||
-			strings.Contains(err.Error(), "query") ||
-			strings.Contains(err.Error(), "sqlite error") {
-			return connect.NewError(connect.CodeInvalidArgument, err)
-		}
-
-		return connect.NewError(connect.CodeInternal, err)
+func NewDBRunnerService(optfns ...NewDBRunnerServiceOptionFn) *DBRunnerService {
+	options := &DBRunnerServiceOptions{}
+	for _, optfn := range optfns {
+		optfn(options)
 	}
 
-	for _, result := range output.Result {
-		err := stream.Send(&dbrunnerv1.RunQueryResponse{
-			Rows: lo.Map(result, func(r struct {
-				Column string
-				Value  *string
-			}, _ int,
-			) *commonv1.OptionalStringPair {
-				return &commonv1.OptionalStringPair{
-					Key:   r.Column,
-					Value: r.Value,
-				}
-			}),
-		})
+	if options.RedisAddr == "" {
+		panic("missing RedisAddr – set it with WithRedisAddr or WithRedisEnvironments")
+	}
+
+	redis := redis.NewClient(&redis.Options{
+		Addr:     options.RedisAddr,
+		Password: options.RedisPassword,
+		DB:       options.RedisDB,
+	})
+
+	return &DBRunnerService{
+		cacheModule: newCacheModule(redis),
+	}
+}
+
+func WithRedisAddr(addr string) NewDBRunnerServiceOptionFn {
+	return func(o *DBRunnerServiceOptions) {
+		o.RedisAddr = addr
+	}
+}
+
+func WithRedisPassword(password string) NewDBRunnerServiceOptionFn {
+	return func(o *DBRunnerServiceOptions) {
+		o.RedisPassword = password
+	}
+}
+
+func WithRedisDB(db int) NewDBRunnerServiceOptionFn {
+	return func(o *DBRunnerServiceOptions) {
+		o.RedisDB = db
+	}
+}
+
+func WithRedisEnvironments() NewDBRunnerServiceOptionFn {
+	return func(o *DBRunnerServiceOptions) {
+		redisDBStr := os.Getenv("REDIS_DB")
+		if redisDBStr == "" {
+			redisDBStr = "0"
+		}
+		parsedDBNum, err := strconv.Atoi(redisDBStr)
 		if err != nil {
-			return connect.NewError(connect.CodeDataLoss, err)
+			panic("invalid REDIS_DB: " + err.Error())
 		}
-	}
 
-	return nil
+		o.RedisAddr = os.Getenv("REDIS_ADDR")
+		o.RedisPassword = os.Getenv("REDIS_PASSWORD")
+		o.RedisDB = parsedDBNum
+	}
 }

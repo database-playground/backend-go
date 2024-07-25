@@ -5,11 +5,21 @@ package dbrunner.v1;
 import "common/v1/common.proto";
 
 service DbRunnerService {
-    // RunQuery runs the given query on the given schema and returns the results.
+    // RunQuery runs the given query on the given schema and returns the ID to retrieve
+    // the result.
     //
     // Note that the schema and query will be standardize (in another words, formatted)
-    // before being executed. The execution result will also be cached (LRU).
-    rpc RunQuery(RunQueryRequest) returns (stream RunQueryResponse) {}
+    // before being executed. The execution result will also be cached up to 1 hour.
+    rpc RunQuery(RunQueryRequest) returns (RunQueryResponse) {}
+
+    // RetrieveQuery retrieves the rows of query that was run on the given schema.
+    rpc RetrieveQuery(RetrieveQueryRequest) returns (stream RetrieveQueryResponse) {}
+    // DiffQuery retrieves the diff of the query that was run on the given schema.
+    rpc DiffQuery(DiffQueryRequest) returns (stream DiffQueryResponse) {}
+    // IsQueriesSame checks if the two queries produce same result.
+    //
+    // It is much faster than DiffQuery since it only compares the hash.
+    rpc AreQueriesOutputSame(AreQueriesOutputSameRequest) returns (AreQueriesOutputSameResponse) {}
 }
 
 message RunQueryRequest {
@@ -20,5 +30,55 @@ message RunQueryRequest {
 }
 
 message RunQueryResponse {
-    repeated common.v1.OptionalStringPair rows = 1;
+    oneof response_type {
+        // id is the unique identifier of the query.
+        //
+        // Although the (schema)-(normalized query) produces the same
+        // id, you must not depend on this as it can be expired. A
+        // good practice is read it within 1 hour.
+        string id = 1;
+
+        // error is the error message if the query fails.
+        string error = 2;
+    }
+}
+
+message RetrieveQueryRequest {
+    // id is the unique identifier of the query.
+    string id = 1;
+}
+
+message RetrieveQueryResponse {
+    // rows is the row of the query result.
+    repeated common.v1.StringPair rows = 1;
+}
+
+message DiffQueryRequest {
+    string left_id = 1;
+    string right_id = 2;
+}
+
+// DiffQueryResponse is designed for side-by-side or inline comparison of two rows.
+// Note that it does not contain the cell-by-cell comparison. You should do it by yourself.
+// The comparsion is done by the first cell of the left and right rows.
+message DiffQueryResponse {
+    // left is the left row of the query result. Usually this is the correct answer.
+    // if there is no such line, it will be empty.
+    repeated common.v1.OptionalStringPair left = 1;
+
+    // right is the right row of the query result. Usually this is the answer from the user.
+    // if there is no such line, it will be empty.
+    repeated common.v1.OptionalStringPair right = 2;
+
+    // same is the flag that indicates whether the left and right rows are the same.
+    bool same = 3;
+}
+
+message AreQueriesOutputSameRequest {
+    string left_id = 1;
+    string right_id = 2;
+}
+
+message AreQueriesOutputSameResponse {
+    bool same = 1;
 }

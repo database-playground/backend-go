@@ -1,6 +1,8 @@
 { pkgs, lib, config, inputs, ... }:
 
 {
+  dotenv.enable = true;
+
   # https://devenv.sh/basics/
   env.GREET = "devenv";
 
@@ -22,6 +24,7 @@
   '';
 
   # https://devenv.sh/services/
+  services.redis.enable = true;
   # services.postgres.enable = true;
 
   # https://devenv.sh/languages/
