@@ -30,11 +30,12 @@ func (s *Service) RunQuery(ctx context.Context, request *connect.Request[dbrunne
 	}
 
 	// check if the output is existed; if so, return it.
-	if outputHash, err := s.cacheModule.GetOutputHash(ctx, normalizedInput.Hash()); err == nil && s.cacheModule.HasOutput(ctx, outputHash) {
+	inputHash := normalizedInput.Hash()
+	if outputHash, err := s.cacheModule.GetOutputHash(ctx, inputHash); err == nil && s.cacheModule.HasOutput(ctx, outputHash) {
 		return &connect.Response[dbrunnerv1.RunQueryResponse]{
 			Msg: &dbrunnerv1.RunQueryResponse{
 				ResponseType: &dbrunnerv1.RunQueryResponse_Id{
-					Id: outputHash,
+					Id: inputHash,
 				},
 			},
 		}, nil
