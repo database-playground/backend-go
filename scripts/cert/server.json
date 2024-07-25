@@ -1,0 +1,19 @@
+{
+    "CN": "database-playground.internal",
+    "hosts": [
+        "db-runner.database-playground.internal"
+    ],
+    "key": {
+        "algo": "ecdsa",
+        "size": 256
+    },
+    "names": [
+        {
+            "C": "TW",
+            "L": "KH",
+            "O": "Database Playground",
+            "OU": "Development Team"
+        }
+    ]
+}
+
