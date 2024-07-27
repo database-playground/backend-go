@@ -1,0 +1,6 @@
+{
+    "recommendations": [
+        "dorzey.vscode-sqlfluff",
+        "yicone.highlight-inline-sql"
+    ]
+}

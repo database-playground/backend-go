@@ -1,0 +1,17 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "database": "pan93412",
+            "username": "pan93412",
+            "name": "psql-dev",
+            "password": ""
+        }
+    ],
+    "sqlfluff.dialect": "postgres",
+    "sqlfluff.env.useDotEnvFile": true,
+    "sqlfluff.linter.lintEntireProject": false
+}

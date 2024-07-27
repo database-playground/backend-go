@@ -7,7 +7,7 @@
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ pkgs.git pkgs.buf pkgs.cfssl ];
+  packages = [ pkgs.git pkgs.buf pkgs.cfssl pkgs.sqlfluff ];
 
   # https://devenv.sh/scripts/
   scripts.hello.exec = "echo hello from $GREET";
@@ -25,7 +25,8 @@
 
   # https://devenv.sh/services/
   services.redis.enable = true;
-  # services.postgres.enable = true;
+  services.postgres.enable = true;
+  services.postgres.listen_addresses = "127.0.0.1";
 
   # https://devenv.sh/languages/
   # languages.nix.enable = true;
