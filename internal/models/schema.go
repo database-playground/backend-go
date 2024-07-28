@@ -34,7 +34,7 @@ const (
 )
 
 type Question struct {
-	ID       uuid.UUID `json:"id"`
+	ID       uuid.UUID `json:"id" db:"question_id"`
 	SchemaID string    `json:"schema_id"`
 
 	Type       string     `json:"type"`
