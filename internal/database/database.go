@@ -8,7 +8,10 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"go.uber.org/fx"
 )
+
+var FxModule = fx.Module("database", fx.Provide(New))
 
 type Database struct {
 	pool   *pgxpool.Pool
