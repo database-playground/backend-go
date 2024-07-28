@@ -28,6 +28,8 @@ type Converter interface {
 	// goverter:map SchemaID SchemaId
 	QuestionToProto(in *Question) *questionmanagerv1.Question
 
+	QuestionsToProto(in []*Question) []*questionmanagerv1.Question
+
 	// goverter:enum:unknown Difficulty_DIFFICULTY_UNSPECIFIED
 	// goverter:enum:map DifficultyUnspecified Difficulty_DIFFICULTY_UNSPECIFIED
 	// goverter:enum:map DifficultyEasy Difficulty_DIFFICULTY_EASY
