@@ -7,6 +7,8 @@ import "questionmanager/v1/model.proto";
 service QuestionManagerService {
     rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {}
     rpc GetSchemaInitialSQL(GetSchemaInitialSQLRequest) returns (GetSchemaInitialSQLResponse) {}
+
+    rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse) {}
 }
 
 message GetSchemaRequest {
@@ -23,4 +25,12 @@ message GetSchemaInitialSQLRequest {
 
 message GetSchemaInitialSQLResponse {
     SchemaInitialSQL schema_initial_sql = 1;
+}
+
+message GetQuestionRequest {
+    string id = 1;
+}
+
+message GetQuestionResponse {
+    Question question = 1;
 }

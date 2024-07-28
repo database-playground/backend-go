@@ -17,3 +17,24 @@ message SchemaInitialSQL {
     string id = 1;
     string initial_sql = 2;
 }
+
+message Question {
+    string id = 1;
+    string schema_id = 2;
+
+    string type = 3;
+    Difficulty difficulty = 4;
+
+    string title = 5;
+    string description = 6;
+
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp updated_at = 8;
+}
+
+enum Difficulty {
+    DIFFICULTY_UNSPECIFIED = 0;
+    DIFFICULTY_EASY = 1;
+    DIFFICULTY_MEDIUM = 2;
+    DIFFICULTY_HARD = 3;
+}
