@@ -1,4 +1,4 @@
-package questionmanager
+package questionmanagerservice
 
 import (
 	"context"

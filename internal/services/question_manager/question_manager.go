@@ -1,4 +1,4 @@
-package questionmanager
+package questionmanagerservice
 
 import (
 	"github.com/database-playground/backend/gen/questionmanager/v1/questionmanagerv1connect"
