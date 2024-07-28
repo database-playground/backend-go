@@ -40,9 +40,12 @@ var FxModule = fx.Module("generic-http-server", fx.Provide(createTLSCertificate)
 	}
 	listenedOn := fmt.Sprintf("0.0.0.0:%s", port)
 
+	mux := http.NewServeMux()
+	mux.Handle(handler.RpcPath, handler.Handler)
+
 	srv := &http.Server{
 		Addr:    listenedOn,
-		Handler: handler,
+		Handler: mux,
 	}
 	if cert != nil {
 		srv.TLSConfig = &tls.Config{
