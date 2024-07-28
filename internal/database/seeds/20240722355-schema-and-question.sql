@@ -129,7 +129,7 @@ VALUES (
 -- Insert into dp_questions
 INSERT INTO dp_questions (
     schema_id,
-    schema_type,
+    type,
     difficulty,
     title,
     description,
@@ -137,7 +137,7 @@ INSERT INTO dp_questions (
 )
 VALUES (
     'shop',
-    'shop',
+    '條件查詢',
     'easy',
     'Find a product in the shop',
     'Write a SQL query to find the ''Laptop'' product in the shop schema.',
@@ -145,7 +145,7 @@ VALUES (
 ),
 (
     'shop',
-    'shop',
+    '條件查詢',
     'easy',
     'List all customers',
     'Write a SQL query to list all customers in the shop schema.',
@@ -153,7 +153,7 @@ VALUES (
 ),
 (
     'shop',
-    'shop',
+    '條件查詢',
     'medium',
     'Find orders by a specific customer',
     'Write a SQL query to find all orders placed by the customer with ID 1.',
@@ -161,7 +161,7 @@ VALUES (
 ),
 (
     'shop',
-    'shop',
+    '群組應用',
     'medium',
     'Find products below a certain stock level',
     'Write a SQL query to find all products with a stock level less than 20.',
@@ -169,7 +169,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '群組應用',
     'easy',
     'List all books',
     'Write a SQL query to list all books in the library schema.',
@@ -177,7 +177,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '群組應用',
     'medium',
     'Find a book by title',
     'Write a SQL query to find the book ''1984'' by George Orwell.',
@@ -185,7 +185,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '子查詢應用',
     'easy',
     'List all members',
     'Write a SQL query to list all members in the library schema.',
@@ -193,7 +193,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '子查詢應用',
     'medium',
     'Find borrowings by a specific member',
     'Write a SQL query to find all borrowings by the member with ID 1.',
@@ -201,7 +201,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '子查詢應用',
     'hard',
     'Find overdue borrowings',
     'Write a SQL query to find all borrowings \
@@ -210,7 +210,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '子查詢+群組綜合應用',
     'easy',
     'List all students',
     'Write a SQL query to list all students in the school schema.',
@@ -218,7 +218,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '子查詢+群組綜合應用',
     'medium',
     'Find students in a specific grade',
     'Write a SQL query to find all students in grade 5.',
@@ -226,7 +226,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '子查詢+群組綜合應用',
     'easy',
     'List all teachers',
     'Write a SQL query to list all teachers in the school schema.',
@@ -234,7 +234,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '進階外部查詢',
     'medium',
     'Find classes taught by a specific teacher',
     'Write a SQL query to find all classes taught by the teacher with ID 1.',
@@ -242,7 +242,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '進階外部查詢',
     'easy',
     'List all classes',
     'Write a SQL query to list all classes in the school schema.',
@@ -250,7 +250,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '進階外部查詢',
     'medium',
     'Find enrollments by a specific student',
     'Write a SQL query to find all enrollments for the student with ID 1.',
@@ -258,7 +258,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '聯集應用',
     'hard',
     'Find students enrolled in a specific class',
     'Write a SQL query to find all students enrolled in the class \
@@ -268,7 +268,7 @@ VALUES (
 ),
 (
     'shop',
-    'shop',
+    '聯集應用',
     'hard',
     'Calculate total sales',
     'Write a SQL query to calculate the total sales in the shop.',
@@ -276,7 +276,7 @@ VALUES (
 ),
 (
     'library',
-    'library',
+    '聯集應用',
     'medium',
     'Find books by genre',
     'Write a SQL query to find all books in the genre ''Fiction''.',
@@ -284,7 +284,7 @@ VALUES (
 ),
 (
     'school',
-    'school',
+    '進階Exists指令應用',
     'hard',
     'Find students older than a specific age',
     'Write a SQL query to find all students older than 10 \

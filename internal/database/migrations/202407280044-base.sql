@@ -26,7 +26,7 @@ CREATE TABLE dp_questions (
     -- schema_id turns to NULL if the schema is deleted
     schema_id VARCHAR(255) REFERENCES dp_schemas ON DELETE SET NULL,
 
-    schema_type VARCHAR(255) NOT NULL,
+    type VARCHAR(255) NOT NULL,
     difficulty DP_DIFFICULTY NOT NULL,
 
     title TEXT NOT NULL,
