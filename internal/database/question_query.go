@@ -43,3 +43,35 @@ func (db *Database) GetQuestion(ctx context.Context, questionID int64) (*models.
 
 	return &question, nil
 }
+
+func (db *Database) GetQuestionAnswer(ctx context.Context, questionID int64) (*models.QuestionAnswer, error) {
+	var questionAnswer models.QuestionAnswer
+
+	err := pgxscan.Get(ctx, db.pool, &questionAnswer, `
+		--sql
+		SELECT question_id, answer
+		FROM dp_questions
+		WHERE question_id = $1;
+	`, questionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &questionAnswer, nil
+}
+
+func (db *Database) GetQuestionSolution(ctx context.Context, questionID int64) (*models.QuestionSolution, error) {
+	var questionSolution models.QuestionSolution
+
+	err := pgxscan.Get(ctx, db.pool, &questionSolution, `
+		--sql
+		SELECT question_id, solution_video
+		FROM dp_questions
+		WHERE question_id = $1;
+	`, questionID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &questionSolution, nil
+}

@@ -113,3 +113,44 @@ func TestGetQuestion(t *testing.T) {
 		assert.Equal(t, listQuestion, getQuestion)
 	}
 }
+
+func TestGetQuestionAnswer(t *testing.T) {
+	t.Parallel()
+
+	db, cleanup := createOnetimeDatabase(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	require.NoError(t, db.Migrate(ctx))
+	require.NoError(t, db.SeedTestOnly(ctx))
+
+	questionAnswer, err := db.GetQuestionAnswer(ctx, 1)
+	require.NoError(t, err)
+	assert.EqualValues(t, 1, questionAnswer.ID)
+	assert.EqualValues(t, "SELECT * FROM products WHERE product_name = 'Laptop';", questionAnswer.Answer)
+}
+
+func TestGetQuestionSolution(t *testing.T) {
+	t.Parallel()
+
+	db, cleanup := createOnetimeDatabase(t)
+	defer cleanup()
+
+	ctx := context.Background()
+	require.NoError(t, db.Migrate(ctx))
+	require.NoError(t, db.SeedTestOnly(ctx))
+
+	t.Run("not null", func(t *testing.T) {
+		questionAnswer, err := db.GetQuestionSolution(ctx, 1)
+		require.NoError(t, err)
+		assert.EqualValues(t, 1, questionAnswer.ID)
+		assert.EqualValues(t, "https://www.youtube.com/watch?v=dQw4w9WgXcQ", *questionAnswer.SolutionVideo)
+	})
+
+	t.Run("null", func(t *testing.T) {
+		questionAnswer, err := db.GetQuestionSolution(ctx, 2)
+		require.NoError(t, err)
+		assert.EqualValues(t, 2, questionAnswer.ID)
+		assert.Empty(t, questionAnswer.SolutionVideo)
+	})
+}

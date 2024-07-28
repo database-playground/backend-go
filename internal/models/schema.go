@@ -46,14 +46,14 @@ type Question struct {
 }
 
 type QuestionAnswer struct {
-	ID int64 `json:"id"`
+	ID int64 `json:"id" db:"question_id"`
 
 	// Answer is the correct answer to the question.
 	Answer string `json:"answer"`
 }
 
 type QuestionSolution struct {
-	ID int64 `json:"id"`
+	ID int64 `json:"id" db:"question_id"`
 
 	// SolutionVideo is a URL to a video that explains the solution.
 	SolutionVideo *string `json:"solution_video,omitempty"`
