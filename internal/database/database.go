@@ -11,7 +11,11 @@ import (
 	"go.uber.org/fx"
 )
 
-var FxModule = fx.Module("database", fx.Provide(New))
+var FxModule = fx.Module("database", fx.Provide(New), fx.Invoke(func(db *Database, lc fx.Lifecycle) {
+	lc.Append(fx.Hook{
+		OnStart: db.Migrate,
+	})
+}))
 
 type Database struct {
 	pool   *pgxpool.Pool
