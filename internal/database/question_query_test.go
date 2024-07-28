@@ -31,7 +31,7 @@ func TestListQuestions(t *testing.T) {
 	t.Logf("%#v", rootQuestions)
 
 	t.Run("offset=1; limit=5", func(t *testing.T) {
-		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Offset: 1, Limit: 5})
+		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Cursor: database.Cursor{Offset: 1, Limit: 5}})
 		if err != nil {
 			t.Fatalf("failed to get schema: %v", err)
 		}
@@ -48,7 +48,7 @@ func TestListQuestions(t *testing.T) {
 	})
 
 	t.Run("offset=5; limit=5", func(t *testing.T) {
-		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Offset: 5, Limit: 5})
+		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Cursor: database.Cursor{Offset: 5, Limit: 5}})
 		if err != nil {
 			t.Fatalf("failed to get schema: %v", err)
 		}
@@ -61,7 +61,7 @@ func TestListQuestions(t *testing.T) {
 	})
 
 	t.Run("offset=0; limit=5", func(t *testing.T) {
-		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Offset: 0, Limit: 5})
+		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Cursor: database.Cursor{Offset: 0, Limit: 5}})
 		if err != nil {
 			t.Fatalf("failed to get schema: %v", err)
 		}
@@ -74,7 +74,7 @@ func TestListQuestions(t *testing.T) {
 	})
 
 	t.Run("limit=0 should be represented as limit=10", func(t *testing.T) {
-		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Limit: 0})
+		questions, err := db.ListQuestions(ctx, database.ListQuestionsParams{Cursor: database.Cursor{Limit: 0}})
 		if err != nil {
 			t.Fatalf("failed to get schema: %v", err)
 		}

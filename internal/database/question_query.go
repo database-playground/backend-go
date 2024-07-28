@@ -5,18 +5,14 @@ import (
 
 	"github.com/database-playground/backend/internal/models"
 	"github.com/georgysavva/scany/v2/pgxscan"
-	"github.com/samber/lo"
 )
 
 type ListQuestionsParams struct {
-	Offset int
-	Limit  int
+	Cursor
 }
 
 func (db *Database) ListQuestions(ctx context.Context, param ListQuestionsParams) ([]*models.Question, error) {
 	var questions []*models.Question
-
-	limit := lo.CoalesceOrEmpty(param.Limit, 10)
 
 	err := pgxscan.Select(ctx, db.pool, &questions, `
 		--sql
@@ -24,7 +20,7 @@ func (db *Database) ListQuestions(ctx context.Context, param ListQuestionsParams
 		FROM dp_questions
 		ORDER BY question_id
 		LIMIT $1 OFFSET $2;
-	`, limit, param.Offset)
+	`, param.GetLimit(), param.GetOffset())
 	if err != nil {
 		return nil, err
 	}
