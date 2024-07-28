@@ -30,10 +30,14 @@ func NewWithURI(postgresURI string, logger *slog.Logger) (*Database, error) {
 		return nil, fmt.Errorf("create pool: %w", err)
 	}
 
+	return NewWithPool(pool, logger), nil
+}
+
+func NewWithPool(pool *pgxpool.Pool, logger *slog.Logger) *Database {
 	return &Database{
 		pool:   pool,
 		logger: logger,
-	}, nil
+	}
 }
 
 func (db *Database) Close() {

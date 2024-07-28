@@ -2,27 +2,29 @@ package database_test
 
 import (
 	"context"
-	"log/slog"
-	"os"
 	"testing"
-
-	"github.com/database-playground/backend/internal/database"
 )
 
-// fixme: this test should not require the active connection :(
+// fixme: manual comparing currently; need to mock the loggers
 
 func TestMigration(t *testing.T) {
-	testPostgresUri := os.Getenv("MIGRATION_TEST_POSTGRES_URI")
-	if testPostgresUri == "" {
-		t.Skip("skipping test; no database connection")
+	db, cleanup := createOnetimeDatabase(t)
+	defer cleanup()
+
+	if err := db.Migrate(context.Background()); err != nil {
+		t.Fatalf("failed to migrate: %v", err)
+	}
+}
+
+func TestDuplicateMigration(t *testing.T) {
+	db, cleanup := createOnetimeDatabase(t)
+	defer cleanup()
+
+	if err := db.Migrate(context.Background()); err != nil {
+		t.Fatalf("failed to migrate: %v", err)
 	}
 
-	database, err := database.NewWithURI(testPostgresUri, slog.Default())
-	if err != nil {
-		t.Skip("skipping test; unconnectable database")
-	}
-
-	if err := database.Migrate(context.Background()); err != nil {
+	if err := db.Migrate(context.Background()); err != nil {
 		t.Fatalf("failed to migrate: %v", err)
 	}
 }
