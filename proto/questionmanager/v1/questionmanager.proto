@@ -2,12 +2,14 @@ syntax = "proto3";
 
 package questionmanager.v1;
 
+import "common/v1/common.proto";
 import "questionmanager/v1/model.proto";
 
 service QuestionManagerService {
     rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {}
     rpc GetSchemaInitialSQL(GetSchemaInitialSQLRequest) returns (GetSchemaInitialSQLResponse) {}
 
+    rpc ListQuestions(ListQuestionsRequest) returns (ListQuestionsResponse) {}
     rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse) {}
 }
 
@@ -25,6 +27,14 @@ message GetSchemaInitialSQLRequest {
 
 message GetSchemaInitialSQLResponse {
     SchemaInitialSQL schema_initial_sql = 1;
+}
+
+message ListQuestionsRequest {
+    optional common.v1.Cursor cursor = 1;
+}
+
+message ListQuestionsResponse {
+    repeated Question questions = 1;
 }
 
 message GetQuestionRequest {
