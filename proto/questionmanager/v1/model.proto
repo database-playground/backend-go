@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package questionmanager.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message Schema {
+    string id = 1;
+    optional string picture = 2;
+    string description = 3;
+
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp updated_at = 5;
+}
+
+message SchemaInitialSQL {
+    string id = 1;
+    string initial_sql = 2;
+}

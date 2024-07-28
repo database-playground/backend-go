@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package questionmanager.v1;
+
+import "questionmanager/v1/model.proto";
+
+service QuestionManagerService {
+    rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {}
+    rpc GetSchemaInitialSQL(GetSchemaInitialSQLRequest) returns (GetSchemaInitialSQLResponse) {}
+}
+
+message GetSchemaRequest {
+    string id = 1;
+}
+
+message GetSchemaResponse {
+    Schema schema = 1;
+}
+
+message GetSchemaInitialSQLRequest {
+    string id = 1;
+}
+
+message GetSchemaInitialSQLResponse {
+    SchemaInitialSQL schema_initial_sql = 1;
+}
