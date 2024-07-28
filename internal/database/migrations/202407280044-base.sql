@@ -22,7 +22,7 @@ EXECUTE PROCEDURE MODDATETIME(updated_at);
 CREATE TYPE dp_difficulty AS ENUM ('easy', 'medium', 'hard');
 
 CREATE TABLE dp_questions (
-    question_id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
+    question_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     -- schema_id turns to NULL if the schema is deleted
     schema_id VARCHAR(255) REFERENCES dp_schemas ON DELETE SET NULL,
 
@@ -48,7 +48,7 @@ EXECUTE PROCEDURE MODDATETIME(updated_at);
 -- Users
 
 CREATE TABLE dp_groups (
-    group_id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
+    group_id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name TEXT NOT NULL,
     description TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -63,5 +63,5 @@ EXECUTE PROCEDURE MODDATETIME(updated_at);
 
 CREATE TABLE dp_users (
     logto_user_id TEXT PRIMARY KEY NOT NULL,
-    group_id UUID REFERENCES dp_groups ON DELETE SET NULL
+    group_id BIGINT REFERENCES dp_groups ON DELETE SET NULL
 );

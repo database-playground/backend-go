@@ -5,7 +5,6 @@ import (
 
 	"github.com/database-playground/backend/internal/models"
 	"github.com/georgysavva/scany/v2/pgxscan"
-	"github.com/google/uuid"
 	"github.com/samber/lo"
 )
 
@@ -23,9 +22,9 @@ func (db *Database) ListQuestions(ctx context.Context, param ListQuestionsParams
 		--sql
 		SELECT question_id, schema_id, type, difficulty, title, description, created_at, updated_at
 		FROM dp_questions
-		ORDER BY created_at DESC
-		OFFSET $1 LIMIT $2;
-	`, param.Offset, limit)
+		ORDER BY question_id
+		LIMIT $1 OFFSET $2;
+	`, limit, param.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +32,7 @@ func (db *Database) ListQuestions(ctx context.Context, param ListQuestionsParams
 	return questions, nil
 }
 
-func (db *Database) GetQuestion(ctx context.Context, questionID uuid.UUID) (*models.Question, error) {
+func (db *Database) GetQuestion(ctx context.Context, questionID int64) (*models.Question, error) {
 	var question models.Question
 
 	err := pgxscan.Get(ctx, db.pool, &question, `

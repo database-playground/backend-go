@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // Schema represents a database schema that can be applied to a question.
@@ -34,8 +32,8 @@ const (
 )
 
 type Question struct {
-	ID       uuid.UUID `json:"id" db:"question_id"`
-	SchemaID string    `json:"schema_id"`
+	ID       int64  `json:"id" db:"question_id"`
+	SchemaID string `json:"schema_id"`
 
 	Type       string     `json:"type"`
 	Difficulty Difficulty `json:"difficulty"`
@@ -48,14 +46,14 @@ type Question struct {
 }
 
 type QuestionAnswer struct {
-	ID uuid.UUID `json:"id"`
+	ID int64 `json:"id"`
 
 	// Answer is the correct answer to the question.
 	Answer string `json:"answer"`
 }
 
 type QuestionSolution struct {
-	ID uuid.UUID `json:"id"`
+	ID int64 `json:"id"`
 
 	// SolutionVideo is a URL to a video that explains the solution.
 	SolutionVideo *string `json:"solution_video,omitempty"`
