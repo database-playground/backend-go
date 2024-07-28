@@ -12,6 +12,9 @@ import (
 //go:embed migrations
 var migrationsFs embed.FS
 
+//go:embed seeds
+var seedsFs embed.FS
+
 var availableMigrations []migrationFile
 
 func init() {
@@ -122,6 +125,40 @@ func (db *Database) Migrate(ctx context.Context) error {
 	if err != nil {
 		db.logger.Error("failed to commit transaction", slog.Any("error", err))
 		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+// SeedTestOnly seeds the database with test data.
+//
+// It must not be used in production since it does not check for duplicates.
+// It is intended to be used only in tests.
+func (db *Database) SeedTestOnly(ctx context.Context) error {
+	seedsFiles, err := seedsFs.ReadDir("seeds")
+	if err != nil {
+		db.logger.Error("failed to read seeds directory", slog.Any("error", err))
+		return fmt.Errorf("read seeds directory: %w", err)
+	}
+
+	for _, seed := range seedsFiles {
+		if !seed.Type().IsRegular() {
+			continue
+		}
+
+		content, err := seedsFs.ReadFile(filepath.Join("seeds", seed.Name()))
+		if err != nil {
+			db.logger.Error("failed to read seed file", slog.Any("error", err))
+			return fmt.Errorf("read seed file: %w", err)
+		}
+
+		_, err = db.pool.Exec(ctx, string(content))
+		if err != nil {
+			db.logger.Error("failed to seed database", slog.Any("error", err))
+			return fmt.Errorf("seed database: %w", err)
+		}
+
+		db.logger.Info("seeded database", slog.Any("file", seed.Name()))
 	}
 
 	return nil

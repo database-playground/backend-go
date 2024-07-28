@@ -5,7 +5,7 @@ CREATE EXTENSION moddatetime;
 CREATE TABLE dp_schemas (
     schema_id VARCHAR(255) PRIMARY KEY,
     picture TEXT,
-    description TEXT,
+    description TEXT NOT NULL DEFAULT '',
 
     initial_sql TEXT NOT NULL,
 
