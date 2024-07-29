@@ -64,6 +64,21 @@
       ];
     };
   };
+    processes.gateway-service = {
+    exec = "go run ./cmd/gateway-service";
+    process-compose = {
+      depends_on = {
+        # dbrunner-service.condition = "process_healthy";
+        question-manager-service.condition = "process_healthy";
+      };
+      readiness_probe = {
+        exec.command = "curl http://localhost:3100/healthz";
+      };
+      environment = [
+        "PORT=3100"
+      ];
+    };
+  };
 
   # See full reference at https://devenv.sh/reference/options/
 }
