@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/deepmap/oapi-codegen/HEAD/configuration-schema.json
-package: gatewayservice
+package: openapi
 generate:
   std-http-server: true
   models: true

@@ -9,6 +9,15 @@ servers:
 security:
   - machine-bearer-token: []
 paths:
+  /healthz:
+    get:
+      summary: Check the health of the gateway
+      tags: [Health]
+      security:
+        - {}
+      responses:
+        "200":
+          description: The gateway is healthy
   /questions:
     get:
       summary: List all questions
@@ -18,11 +27,13 @@ paths:
           name: limit
           schema:
             type: number
+            x-go-type: int64
           description: The number of items to return
         - in: query
           name: offset
           schema:
             type: number
+            x-go-type: int64
           description: The number of items to skip before starting to collect the result set
       responses:
         "200":
@@ -30,10 +41,8 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Questions"
-        default:
+                $ref: "#/components/schemas/Questions"
+        "500":
           $ref: "#/components/responses/Error"
   /questions/{id}:
     get:
@@ -53,9 +62,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Question"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
-        default:
+        "500":
           $ref: "#/components/responses/Error"
   /questions/{id}/answer:
     get:
@@ -75,9 +86,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QuestionAnswer"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
-        default:
+        "500":
           $ref: "#/components/responses/Error"
   /questions/{id}/solution:
     get:
@@ -97,9 +110,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/QuestionSolution"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
-        default:
+        "500":
           $ref: "#/components/responses/Error"
   /schemas/{id}:
     get:
@@ -119,9 +134,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Schema"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
-        default:
+        "500":
           $ref: "#/components/responses/Error"
   /schemas/{id}/initial-sql:
     get:
@@ -141,9 +158,11 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SchemaInitialSQL"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
-        default:
+        "500":
           $ref: "#/components/responses/Error"
 components:
   schemas:
@@ -152,6 +171,8 @@ components:
       properties:
         message:
           type: string
+      required:
+        - message
     Questions:
       type: array
       items:
@@ -178,6 +199,15 @@ components:
         updated_at:
           type: string
           format: date-time
+      required:
+        - id
+        - schema_id
+        - type
+        - difficulty
+        - title
+        - description
+        - created_at
+        - updated_at
     QuestionAnswer:
       type: object
       properties:
@@ -185,6 +215,9 @@ components:
           type: string
         answer:
           type: string
+      required:
+        - id
+        - answer
     QuestionSolution:
       type: object
       properties:
@@ -194,6 +227,9 @@ components:
           type: string
           nullable: true
           example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+      required:
+        - id
+        - solution_video
     Schema:
       type: object
       properties:
@@ -210,6 +246,11 @@ components:
         updated_at:
           type: string
           format: date-time
+      required:
+        - id
+        - description
+        - created_at
+        - updated_at
     SchemaInitialSQL:
       type: object
       properties:
@@ -217,27 +258,28 @@ components:
           type: string
         initial_sql:
           type: string
+      required:
+        - id
+        - initial_sql
   responses:
     NoSuchResourceError:
       description: The requested resource does not exist.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: The requested resource does not exist.
+            $ref: "#/components/schemas/Error"
+    BadRequestError:
+      description: The provided request is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     Error:
       description: A generic error message.
       content:
         application/json:
           schema:
-            type: object
-            properties:
-              message:
-                type: string
-                example: An error occurred
+            $ref: "#/components/schemas/Error"
   securitySchemes:
     machine-bearer-token:
       type: http
