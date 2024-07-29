@@ -42,6 +42,9 @@ var FxModule = fx.Module("generic-http-server", fx.Provide(createTLSCertificate)
 
 	mux := http.NewServeMux()
 	mux.Handle(handler.RpcPath, handler.Handler)
+	mux.Handle("/healthz", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("ok"))
+	}))
 
 	srv := &http.Server{
 		Addr:    listenedOn,
