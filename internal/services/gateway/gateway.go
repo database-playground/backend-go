@@ -2,22 +2,34 @@ package gatewayservice
 
 import (
 	"context"
+	_ "embed"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 
+	"github.com/database-playground/backend/gen/dbrunner/v1/dbrunnerv1connect"
 	"github.com/database-playground/backend/gen/questionmanager/v1/questionmanagerv1connect"
 	"github.com/database-playground/backend/internal/models"
 	pbgenerated "github.com/database-playground/backend/internal/models/generated"
 	"go.uber.org/fx"
 
+	"github.com/database-playground/backend/internal/services/gateway/converter"
 	modelgenerated "github.com/database-playground/backend/internal/services/gateway/converter/generated"
 	"github.com/database-playground/backend/internal/services/gateway/openapi"
 )
 
+//go:embed openapi/openapi.yaml
+var openapiSpec []byte
+
 var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(func(server openapi.StrictServerInterface, lc fx.Lifecycle) {
 	mux := http.NewServeMux()
+
+	// serve openapi spec
+	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
+		_, _ = w.Write(openapiSpec)
+	})
+
 	handler := openapi.HandlerFromMux(openapi.NewStrictHandler(server, []openapi.StrictMiddlewareFunc{}), mux)
 
 	port := os.Getenv("PORT")
@@ -52,20 +64,30 @@ var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(fun
 	})
 }))
 
+type ServerParam struct {
+	fx.In
+
+	Logger                *slog.Logger
+	QuestionManagerClient questionmanagerv1connect.QuestionManagerServiceClient
+	DBRunnerClient        dbrunnerv1connect.DbRunnerServiceClient
+}
+
 type Server struct {
 	logger *slog.Logger
 
 	questionManagerService questionmanagerv1connect.QuestionManagerServiceClient
+	dbrunnerService        dbrunnerv1connect.DbRunnerServiceClient
 
 	pbConverter    models.Converter
-	modelConverter Converter
+	modelConverter converter.Converter
 }
 
-func NewServer(logger *slog.Logger, questionManagerService questionmanagerv1connect.QuestionManagerServiceClient) openapi.StrictServerInterface {
+func NewServer(param ServerParam) openapi.StrictServerInterface {
 	return &Server{
-		logger: logger,
+		logger: param.Logger,
 
-		questionManagerService: questionManagerService,
+		questionManagerService: param.QuestionManagerClient,
+		dbrunnerService:        param.DBRunnerClient,
 
 		pbConverter:    &pbgenerated.ConverterImpl{},
 		modelConverter: &modelgenerated.ConverterImpl{},

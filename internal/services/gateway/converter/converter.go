@@ -1,8 +1,9 @@
 //go:generate go run github.com/jmattheis/goverter/cmd/goverter gen .
 
-package gatewayservice
+package converter
 
 import (
+	"encoding/base64"
 	"strconv"
 	"time"
 
@@ -49,4 +50,16 @@ func TimeToTime(in time.Time) time.Time {
 
 func StringToID(in string) (int64, error) {
 	return strconv.ParseInt(in, 10, 64)
+}
+
+func EncodeChallengeID(in string) string {
+	return base64.URLEncoding.EncodeToString([]byte(in))
+}
+
+func DecodeChallengeID(in string) (string, error) {
+	b, err := base64.URLEncoding.DecodeString(in)
+	if err != nil {
+		return "", err
+	}
+	return string(b), nil
 }

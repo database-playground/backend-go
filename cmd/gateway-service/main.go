@@ -8,5 +8,5 @@ import (
 )
 
 func main() {
-	fx.New(slogmodule.FxOptions, clients.QuestionManagerClientFxModule, gatewayservice.FxModule).Run()
+	fx.New(slogmodule.FxOptions, clients.QuestionManagerClientFxModule, clients.DBRunnerClientFxModule, gatewayservice.FxModule).Run()
 }

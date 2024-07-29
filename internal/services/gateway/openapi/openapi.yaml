@@ -116,6 +116,72 @@ paths:
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
           $ref: "#/components/responses/Error"
+  /challenges:
+    post:
+      summary: Create an challenge of a question.
+      description: |
+        The challenge is an asynchronous operation that will return the challenge ID to the client. The client can then use the challenge ID to query the result of the challenge or compare the result with the answer.
+
+        Note that the challenge will be available for 1 hour, and your challenge result will be cached. Therefore, if you want to re-execute the challenge without worrying about the token expiring, you can simply create a new challenge, and there will be no additional cost.
+      tags: [Challenges]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                questionID:
+                  type: string
+                query:
+                  type: string
+              required:
+                - questionID
+                - query
+      responses:
+        "200":
+          description: The result of the query
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challengeID:
+                    type: string
+                required:
+                  - challengeID
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "422":
+          $ref: "#/components/responses/UnprocessableEntityError"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        "500":
+          $ref: "#/components/responses/Error"
+  /challenges/{id}:
+    get:
+      summary: Get the result of a challenge by ID
+      tags: [Challenges]
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+          description: The ID of the challenge to retrieve the result of
+      responses:
+        "200":
+          description: The result of the challenge
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueryResult"
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        "500":
+          $ref: "#/components/responses/Error"
   /schemas/{id}:
     get:
       summary: Get a schema by ID
@@ -261,6 +327,24 @@ components:
       required:
         - id
         - initial_sql
+    QueryResult:
+      type: object
+      properties:
+        header:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: array
+            items:
+              type: string
+              nullable: true
+              x-go-type: "*string"
+      required:
+        - header
+        - rows
   responses:
     NoSuchResourceError:
       description: The requested resource does not exist.
@@ -270,6 +354,12 @@ components:
             $ref: "#/components/schemas/Error"
     BadRequestError:
       description: The provided request is invalid.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    UnprocessableEntityError:
+      description: The provided request is valid, but the server is unable to process it.
       content:
         application/json:
           schema:
