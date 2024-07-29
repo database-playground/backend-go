@@ -1,0 +1,246 @@
+openapi: "3.0.3"
+info:
+  title: Database Playground Gateway API
+  description: The RESTful API of the Database Playground Gateway
+  version: "1.0.0"
+servers:
+  - url: http://localhost:3100
+    description: Development server
+security:
+  - machine-bearer-token: []
+paths:
+  /questions:
+    get:
+      summary: List all questions
+      tags: [Questions]
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: number
+            format: int64
+          description: The number of items to return
+        - in: query
+          name: offset
+          schema:
+            type: number
+            format: int64
+          description: The number of items to skip before starting to collect the result set
+      responses:
+        "200":
+          description: A list of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Questions"
+        default:
+          $ref: "#/components/responses/Error"
+  /questions/{id}:
+    get:
+      summary: Get a question by ID
+      tags: [Questions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the question to retrieve
+      responses:
+        "200":
+          description: A question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        default:
+          $ref: "#/components/responses/Error"
+  /questions/{id}/answer:
+    get:
+      summary: Get the answer of a question by ID
+      tags: [Questions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the question to retrieve the answer of
+      responses:
+        "200":
+          description: The answer of the question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionAnswer"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        default:
+          $ref: "#/components/responses/Error"
+  /questions/{id}/solution:
+    get:
+      summary: Get the solution of a question by ID
+      tags: [Questions]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the question to retrieve the solution of
+      responses:
+        "200":
+          description: The solution of the question
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuestionSolution"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        default:
+          $ref: "#/components/responses/Error"
+  /schemas/{id}:
+    get:
+      summary: Get a schema by ID
+      tags: [Schemas]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the schema to retrieve
+      responses:
+        "200":
+          description: A schema
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Schema"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        default:
+          $ref: "#/components/responses/Error"
+  /schemas/{id}/initial-sql:
+    get:
+      summary: Get the initial SQL of a schema by ID
+      tags: [Schemas]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the schema to retrieve the initial SQL of
+      responses:
+        "200":
+          description: The initial SQL of the schema
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SchemaInitialSQL"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        default:
+          $ref: "#/components/responses/Error"
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+    Questions:
+      type: array
+      items:
+        $ref: "#/components/schemas/Question"
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        schema_id:
+          type: string
+        type:
+          type: string
+        difficulty:
+          type: string
+          enum: ["", easy, medium, hard]
+        title:
+          type: string
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    QuestionAnswer:
+      type: object
+      properties:
+        id:
+          type: string
+        answer:
+          type: string
+    QuestionSolution:
+      type: object
+      properties:
+        id:
+          type: string
+        solution_video:
+          type: string
+          nullable: true
+          example: "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+    Schema:
+      type: object
+      properties:
+        id:
+          type: string
+        picture:
+          type: string
+          nullable: true
+        description:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    SchemaInitialSQL:
+      type: object
+      properties:
+        id:
+          type: string
+        initial_sql:
+          type: string
+  responses:
+    NoSuchResourceError:
+      description: The requested resource does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: The requested resource does not exist.
+    Error:
+      description: A generic error message.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                example: An error occurred
+  securitySchemes:
+    machine-bearer-token:
+      type: http
+      scheme: bearer
