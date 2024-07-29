@@ -43,3 +43,39 @@ func (s *Service) GetQuestion(ctx context.Context, request *connect.Request[ques
 		},
 	}, nil
 }
+
+func (s *Service) GetQuestionAnswer(ctx context.Context, request *connect.Request[questionmanagerv1.GetQuestionAnswerRequest]) (*connect.Response[questionmanagerv1.GetQuestionAnswerResponse], error) {
+	questionAnswer, err := s.db.GetQuestionAnswer(ctx, request.Msg.GetId())
+	if errors.Is(err, database.ErrNotFound) {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	questionAnswerPb := s.converter.QuestionAnswerToProto(questionAnswer)
+
+	return &connect.Response[questionmanagerv1.GetQuestionAnswerResponse]{
+		Msg: &questionmanagerv1.GetQuestionAnswerResponse{
+			QuestionAnswer: questionAnswerPb,
+		},
+	}, nil
+}
+
+func (s *Service) GetQuestionSolution(ctx context.Context, request *connect.Request[questionmanagerv1.GetQuestionSolutionRequest]) (*connect.Response[questionmanagerv1.GetQuestionSolutionResponse], error) {
+	questionSolution, err := s.db.GetQuestionSolution(ctx, request.Msg.GetId())
+	if errors.Is(err, database.ErrNotFound) {
+		return nil, connect.NewError(connect.CodeNotFound, err)
+	}
+	if err != nil {
+		return nil, connect.NewError(connect.CodeInternal, err)
+	}
+
+	questionSolutionPb := s.converter.QuestionSolutionToProto(questionSolution)
+
+	return &connect.Response[questionmanagerv1.GetQuestionSolutionResponse]{
+		Msg: &questionmanagerv1.GetQuestionSolutionResponse{
+			QuestionSolution: questionSolutionPb,
+		},
+	}, nil
+}

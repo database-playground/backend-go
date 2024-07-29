@@ -38,3 +38,13 @@ enum Difficulty {
     DIFFICULTY_MEDIUM = 2;
     DIFFICULTY_HARD = 3;
 }
+
+message QuestionAnswer {
+    int64 id = 1;
+    string answer = 2;
+}
+
+message QuestionSolution {
+    int64 id = 1;
+    optional string solution_video = 2;
+}

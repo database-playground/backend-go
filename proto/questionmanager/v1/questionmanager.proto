@@ -11,6 +11,8 @@ service QuestionManagerService {
 
     rpc ListQuestions(ListQuestionsRequest) returns (ListQuestionsResponse) {}
     rpc GetQuestion(GetQuestionRequest) returns (GetQuestionResponse) {}
+    rpc GetQuestionAnswer(GetQuestionAnswerRequest) returns (GetQuestionAnswerResponse) {}
+    rpc GetQuestionSolution(GetQuestionSolutionRequest) returns (GetQuestionSolutionResponse) {}
 }
 
 message GetSchemaRequest {
@@ -43,4 +45,20 @@ message GetQuestionRequest {
 
 message GetQuestionResponse {
     Question question = 1;
+}
+
+message GetQuestionAnswerRequest {
+    int64 id = 1;
+}
+
+message GetQuestionAnswerResponse {
+    QuestionAnswer question_answer = 1;
+}
+
+message GetQuestionSolutionRequest {
+    int64 id = 1;
+}
+
+message GetQuestionSolutionResponse {
+    QuestionSolution question_solution = 1;
 }

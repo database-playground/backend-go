@@ -36,6 +36,14 @@ type Converter interface {
 	// goverter:enum:map DifficultyMedium Difficulty_DIFFICULTY_MEDIUM
 	// goverter:enum:map DifficultyHard Difficulty_DIFFICULTY_HARD
 	DifficultyToProto(in Difficulty) questionmanagerv1.Difficulty
+
+	// goverter:ignore state sizeCache unknownFields
+	// goverter:map ID Id
+	QuestionAnswerToProto(in *QuestionAnswer) *questionmanagerv1.QuestionAnswer
+
+	// goverter:ignore state sizeCache unknownFields
+	// goverter:map ID Id
+	QuestionSolutionToProto(in *QuestionSolution) *questionmanagerv1.QuestionSolution
 }
 
 func TimeToTimestamp(t time.Time) *timestamppb.Timestamp {
