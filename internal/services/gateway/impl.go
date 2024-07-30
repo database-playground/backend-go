@@ -86,44 +86,6 @@ func (s *Server) GetQuestionsId(ctx context.Context, request openapi.GetQuestion
 	return openapi.GetQuestionsId200JSONResponse(questionResponse), nil
 }
 
-// GetQuestionsIdAnswer implements StrictServerInterface.
-func (s *Server) GetQuestionsIdAnswer(ctx context.Context, request openapi.GetQuestionsIdAnswerRequestObject) (openapi.GetQuestionsIdAnswerResponseObject, error) {
-	id, err := converter.StringToID(request.Id)
-	if err != nil {
-		return openapi.GetQuestionsIdAnswer400JSONResponse{
-			BadRequestErrorJSONResponse: openapi.BadRequestErrorJSONResponse{
-				Message: "Invalid ID.",
-			},
-		}, nil
-	}
-
-	response, err := s.questionManagerService.GetQuestionAnswer(ctx, &connect.Request[questionmanagerv1.GetQuestionAnswerRequest]{
-		Msg: &questionmanagerv1.GetQuestionAnswerRequest{
-			Id: id,
-		},
-	})
-	if connect.CodeOf(err) == connect.CodeNotFound {
-		return openapi.GetQuestionsIdAnswer404JSONResponse{
-			NoSuchResourceErrorJSONResponse: openapi.NoSuchResourceErrorJSONResponse{
-				Message: "Answer not found.",
-			},
-		}, nil
-	}
-	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to fetch answer", slog.Any("error", err), slog.Any("request", request))
-		return openapi.GetQuestionsIdAnswer500JSONResponse{
-			ErrorJSONResponse: openapi.ErrorJSONResponse{
-				Message: "Failed to fetch answer.",
-			},
-		}, nil
-	}
-
-	answerModel := s.pbConverter.QuestionAnswerFromProto(response.Msg.GetQuestionAnswer())
-	answerResponse := s.modelConverter.QuestionAnswerFromModel(answerModel)
-
-	return openapi.GetQuestionsIdAnswer200JSONResponse(answerResponse), nil
-}
-
 // GetQuestionsIdSolution implements StrictServerInterface.
 func (s *Server) GetQuestionsIdSolution(ctx context.Context, request openapi.GetQuestionsIdSolutionRequestObject) (openapi.GetQuestionsIdSolutionResponseObject, error) {
 	id, err := converter.StringToID(request.Id)
@@ -341,33 +303,4 @@ func (s *Server) GetSchemasId(ctx context.Context, request openapi.GetSchemasIdR
 	schemaResponse := s.modelConverter.SchemaFromModel(schemaModel)
 
 	return openapi.GetSchemasId200JSONResponse(schemaResponse), nil
-}
-
-// GetSchemasIdInitialSql implements StrictServerInterface.
-func (s *Server) GetSchemasIdInitialSql(ctx context.Context, request openapi.GetSchemasIdInitialSqlRequestObject) (openapi.GetSchemasIdInitialSqlResponseObject, error) {
-	response, err := s.questionManagerService.GetSchemaInitialSQL(ctx, &connect.Request[questionmanagerv1.GetSchemaInitialSQLRequest]{
-		Msg: &questionmanagerv1.GetSchemaInitialSQLRequest{
-			Id: request.Id,
-		},
-	})
-	if connect.CodeOf(err) == connect.CodeNotFound {
-		return openapi.GetSchemasIdInitialSql404JSONResponse{
-			NoSuchResourceErrorJSONResponse: openapi.NoSuchResourceErrorJSONResponse{
-				Message: "Initial SQL not found.",
-			},
-		}, nil
-	}
-	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to fetch initial SQL", slog.Any("error", err), slog.Any("request", request))
-		return openapi.GetSchemasIdInitialSql500JSONResponse{
-			ErrorJSONResponse: openapi.ErrorJSONResponse{
-				Message: "Failed to fetch initial SQL.",
-			},
-		}, nil
-	}
-
-	initialSQLModel := s.pbConverter.SchemaInitialSQLFromProto(response.Msg.GetSchemaInitialSql())
-	initialSQLResponse := s.modelConverter.SchemaInitialSQLFromModel(initialSQLModel)
-
-	return openapi.GetSchemasIdInitialSql200JSONResponse(initialSQLResponse), nil
 }

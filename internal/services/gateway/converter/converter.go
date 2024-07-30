@@ -19,7 +19,6 @@ import (
 // goverter:extend TimeToTime
 type Converter interface {
 	SchemaFromModel(in *models.Schema) openapi.Schema
-	SchemaInitialSQLFromModel(in *models.SchemaInitialSQL) openapi.SchemaInitialSQL
 	// goverter:enum:unknown Empty
 	// goverter:enum:map DifficultyUnspecified Empty
 	// goverter:enum:map DifficultyEasy Easy
@@ -28,7 +27,6 @@ type Converter interface {
 	DifficultyFromModel(in models.Difficulty) openapi.QuestionDifficulty
 	QuestionFromModel(in *models.Question) openapi.Question
 	QuestionsFromModel(in []*models.Question) openapi.Questions
-	QuestionAnswerFromModel(in *models.QuestionAnswer) openapi.QuestionAnswer
 	QuestionSolutionFromModel(in *models.QuestionSolution) openapi.QuestionSolution
 }
 

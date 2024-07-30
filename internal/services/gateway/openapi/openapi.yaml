@@ -68,30 +68,6 @@ paths:
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
           $ref: "#/components/responses/Error"
-  /questions/{id}/answer:
-    get:
-      summary: Get the answer of a question by ID
-      tags: [Questions]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the question to retrieve the answer of
-      responses:
-        "200":
-          description: The answer of the question
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/QuestionAnswer"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "404":
-          $ref: "#/components/responses/NoSuchResourceError"
-        "500":
-          $ref: "#/components/responses/Error"
   /questions/{id}/solution:
     get:
       summary: Get the solution of a question by ID
@@ -200,30 +176,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Schema"
-        "400":
-          $ref: "#/components/responses/BadRequestError"
-        "404":
-          $ref: "#/components/responses/NoSuchResourceError"
-        "500":
-          $ref: "#/components/responses/Error"
-  /schemas/{id}/initial-sql:
-    get:
-      summary: Get the initial SQL of a schema by ID
-      tags: [Schemas]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-          description: The ID of the schema to retrieve the initial SQL of
-      responses:
-        "200":
-          description: The initial SQL of the schema
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SchemaInitialSQL"
         "400":
           $ref: "#/components/responses/BadRequestError"
         "404":
