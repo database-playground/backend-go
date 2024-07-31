@@ -6,15 +6,11 @@ info:
 servers:
   - url: http://localhost:3100
     description: Development server
-security:
-  - machine-bearer-token: []
 paths:
   /healthz:
     get:
       summary: Check the health of the gateway
       tags: [Health]
-      security:
-        - {}
       responses:
         "200":
           description: The gateway is healthy
@@ -22,6 +18,8 @@ paths:
     get:
       summary: List all questions
       tags: [Questions]
+      security:
+        - logto-jwt-token: ["read:question"]
       parameters:
         - in: query
           name: limit
@@ -50,6 +48,8 @@ paths:
     get:
       summary: Get a question by ID
       tags: [Questions]
+      security:
+        - logto-jwt-token: ["read:question"]
       parameters:
         - in: path
           name: id
@@ -75,7 +75,12 @@ paths:
   /questions/{id}/solution:
     get:
       summary: Get the solution of a question by ID
+      description: |
+        Note that when calling this method, it consumes
+        the experience points of the user (by 20).
       tags: [Questions]
+      security:
+        - logto-jwt-token: ["read:solution"]
       parameters:
         - in: path
           name: id
@@ -105,6 +110,8 @@ paths:
         The challenge is an asynchronous operation that will return the challenge ID to the client. The client can then use the challenge ID to query the result of the challenge or compare the result with the answer.
 
         Note that the challenge will be available for 1 hour, and your challenge result will be cached. Therefore, if you want to re-execute the challenge without worrying about the token expiring, you can simply create a new challenge, and there will be no additional cost.
+      security:
+        - logto-jwt-token: ["challenge"]
       tags: [Challenges]
       requestBody:
         required: true
@@ -146,6 +153,8 @@ paths:
     get:
       summary: Get the result of a challenge by ID
       tags: [Challenges]
+      security:
+        - logto-jwt-token: ["challenge"]
       parameters:
         - in: path
           required: true
@@ -172,6 +181,8 @@ paths:
     get:
       summary: Get a schema by ID
       tags: [Schemas]
+      security:
+        - logto-jwt-token: ["read:schema"]
       parameters:
         - in: path
           name: id
@@ -341,7 +352,7 @@ components:
           schema:
             $ref: "#/components/schemas/Error"
   securitySchemes:
-    machine-bearer-token:
+    logto-jwt-token:
       type: http
       scheme: bearer
       bearerFormat: JWT
