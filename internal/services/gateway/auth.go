@@ -22,6 +22,7 @@ const AuthContextJwtToken = AuthContextKey("jwt_token")
 var scopeMap map[string][]string = map[string][]string{
 	"PostChallenges":         {"challenge"},
 	"GetChallengesId":        {"challenge"},
+	"GetChallengesIdCompare": {"read:question", "challenge"},
 	"GetQuestions":           {"read:question"},
 	"GetQuestionsId":         {"read:question"},
 	"GetQuestionsIdSolution": {"read:question", "read:solution"},
