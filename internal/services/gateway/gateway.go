@@ -3,7 +3,6 @@ package gatewayservice
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -22,7 +21,9 @@ import (
 //go:embed openapi/openapi.yaml
 var openapiSpec []byte
 
-var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(func(server openapi.StrictServerInterface, lc fx.Lifecycle) {
+var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(func(logger *slog.Logger, server openapi.StrictServerInterface, lc fx.Lifecycle) {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	mux := http.NewServeMux()
 
 	// serve openapi spec
@@ -30,7 +31,17 @@ var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(fun
 		_, _ = w.Write(openapiSpec)
 	})
 
-	handler := openapi.HandlerFromMux(openapi.NewStrictHandler(server, []openapi.StrictMiddlewareFunc{}), mux)
+	middlewares := []openapi.StrictMiddlewareFunc{}
+	logtoDomain := os.Getenv("LOGTO_DOMAIN")
+	resourceIndicator := os.Getenv("GATEWAY_RESOURCE_INDICATOR")
+
+	if logtoDomain != "" && resourceIndicator != "" {
+		middlewares = append(middlewares, NewAuthorizationMiddleware(ctx, logtoDomain, resourceIndicator, logger))
+	} else {
+		logger.Warn("LOGTO_DOMAIN or GATEWAY_RESOURCE_INDICATOR is not set. Authorization middleware is not enabled.")
+	}
+
+	handler := openapi.HandlerFromMux(openapi.NewStrictHandler(server, middlewares), mux)
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -55,11 +66,12 @@ var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(fun
 					_ = s.ListenAndServe()
 				}
 			}()
-			fmt.Printf("starting server at %s\n", s.Addr)
+			slog.Info("server starting", slog.String("address", s.Addr))
 			return nil
 		},
 		OnStop: func(context.Context) error {
-			return s.Shutdown(context.Background())
+			cancel()
+			return s.Shutdown(ctx)
 		},
 	})
 }))
