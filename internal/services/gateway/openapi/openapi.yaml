@@ -42,6 +42,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Questions"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "500":
           $ref: "#/components/responses/Error"
   /questions/{id}:
@@ -64,6 +66,8 @@ paths:
                 $ref: "#/components/schemas/Question"
         "400":
           $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
@@ -88,6 +92,8 @@ paths:
                 $ref: "#/components/schemas/QuestionSolution"
         "400":
           $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
@@ -128,6 +134,8 @@ paths:
                   - challengeID
         "400":
           $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "422":
           $ref: "#/components/responses/UnprocessableEntityError"
         "404":
@@ -154,6 +162,8 @@ paths:
                 $ref: "#/components/schemas/QueryResult"
         "400":
           $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
@@ -178,6 +188,8 @@ paths:
                 $ref: "#/components/schemas/Schema"
         "400":
           $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
         "404":
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
@@ -298,6 +310,12 @@ components:
         - header
         - rows
   responses:
+    UnauthorizedError:
+      description: The request has not been applied because it lacks valid authentication credentials for the target resource.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
     NoSuchResourceError:
       description: The requested resource does not exist.
       content:
@@ -326,3 +344,4 @@ components:
     machine-bearer-token:
       type: http
       scheme: bearer
+      bearerFormat: JWT
