@@ -5,6 +5,7 @@ package converter
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"strconv"
 	"time"
 
@@ -75,6 +76,10 @@ func DecodeChallengeID(in string) (*TransferableChallengeID, error) {
 	err = json.Unmarshal(b, &tc)
 	if err != nil {
 		return nil, err
+	}
+
+	if tc.ChallengeID == "" {
+		return nil, errors.New("invalid challenge id")
 	}
 
 	return &tc, nil

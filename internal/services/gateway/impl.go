@@ -208,6 +208,14 @@ func (s *Server) PostChallenges(ctx context.Context, request openapi.PostChallen
 		}, nil
 	}
 
+	if request.Body.Query == "" {
+		return openapi.PostChallenges400JSONResponse{
+			BadRequestErrorJSONResponse: openapi.BadRequestErrorJSONResponse{
+				Message: "Query is empty.",
+			},
+		}, nil
+	}
+
 	questionResponse, err := s.questionManagerService.GetQuestion(ctx, &connect.Request[questionmanagerv1.GetQuestionRequest]{
 		Msg: &questionmanagerv1.GetQuestionRequest{
 			Id: questionID,
@@ -316,7 +324,7 @@ func (s *Server) GetChallengesIdCompare(ctx context.Context, request openapi.Get
 		},
 	})
 	if err != nil {
-		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", err), slog.Any("request", request))
+		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", err), slog.Any("request", request), slog.Any("answer", answer.Msg.GetQuestionAnswer()))
 		return openapi.GetChallengesIdCompare500JSONResponse{
 			ErrorJSONResponse: openapi.ErrorJSONResponse{
 				Message: "Failed to execute answer. The answer is incorrect.",
@@ -324,7 +332,7 @@ func (s *Server) GetChallengesIdCompare(ctx context.Context, request openapi.Get
 		}, nil
 	}
 	if answerResponse.Msg.GetError() != "" {
-		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", answerResponse.Msg.GetError()), slog.Any("request", request))
+		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", answerResponse.Msg.GetError()), slog.Any("request", request), slog.Any("answer", answer.Msg.GetQuestionAnswer()))
 		return openapi.GetChallengesIdCompare500JSONResponse{
 			ErrorJSONResponse: openapi.ErrorJSONResponse{
 				Message: "Failed to execute answer. The answer is incorrect.",
