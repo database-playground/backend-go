@@ -2,6 +2,7 @@ package gatewayservice
 
 import (
 	"context"
+	"embed"
 	_ "embed"
 	"log/slog"
 	"net/http"
@@ -21,15 +22,19 @@ import (
 //go:embed openapi/openapi.yaml
 var openapiSpec []byte
 
+//go:embed openapi/docs
+var openapiDocs embed.FS
+
 var FxModule = fx.Module("gateway-service", fx.Provide(NewServer), fx.Invoke(func(logger *slog.Logger, server openapi.StrictServerInterface, lc fx.Lifecycle) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	mux := http.NewServeMux()
 
 	// serve openapi spec
-	mux.HandleFunc("GET /openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
+	mux.HandleFunc("GET /openapi/openapi.yaml", func(w http.ResponseWriter, _ *http.Request) {
 		_, _ = w.Write(openapiSpec)
 	})
+	mux.Handle("GET /openapi/docs/", http.FileServerFS(openapiDocs))
 
 	middlewares := []openapi.StrictMiddlewareFunc{}
 	logtoDomain := os.Getenv("LOGTO_DOMAIN")
