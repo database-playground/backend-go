@@ -92,3 +92,20 @@ tasks:
   build:
     desc: "Build the project"
     deps: [build-dbrunner, build-gateway, build-question-manager]
+
+  build-dbrunner-docker:
+    desc: "Build Docker image of the dbrunner microservice"
+    cmds:
+      - docker build -f Dockerfile.dbrunner-service .
+  build-gateway-docker:
+    desc: "Build Docker image of the gateway microservice"
+    cmds:
+      - docker build -f Dockerfile.gateway-service .
+  build-question-manager-docker:
+    desc: "Build Docker image of the question-manager microservice"
+    cmds:
+      - docker build -f Dockerfile.question-manager-service .
+
+  build-docker:
+    desc: "Build Docker images of the project. Useful to check if the Dockerfile is correct"
+    deps: [build-dbrunner-docker, build-gateway-docker, build-question-manager-docker]
