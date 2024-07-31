@@ -1,0 +1,94 @@
+version: '3'
+
+tasks:
+  ca:
+    dir: scripts/cert
+    desc: "Generate a self-signed CA for development usage"
+    cmds:
+      - bash create-ca.sh "{{.PROPERTY}}"
+    sources:
+      - ca-*.json
+      - create-ca.sh
+    generates:
+      - ca-{{.PROPERTY}}-key.pem
+      - ca-{{.PROPERTY}}.pem
+      - ca-{{.PROPERTY}}.csr
+
+  server-cert:
+    dir: scripts/cert
+    desc: "Generate self-signed certificates for server, development usage"
+    deps: ["ca"]
+    cmds:
+      - bash create-server-cert.sh {{.PROPERTY}}
+    sources:
+      - server.json
+      - create-server-cert.sh
+    generates:
+      - server-{{.PROPERTY}}.pem
+      - server-{{.PROPERTY}}.csr
+      - server-{{.PROPERTY}}-key.pem
+
+  client-cert:
+    dir: scripts/cert
+    desc: "Generate self-signed certificates for client, development usage"
+    deps: ["ca"]
+    cmds:
+      - bash create-client-cert.sh {{.PROPERTY}}
+    sources:
+      - client.json
+      - create-client-cert.sh
+    generates:
+      - client-{{.PROPERTY}}.pem
+      - client-{{.PROPERTY}}.csr
+      - client-{{.PROPERTY}}-key.pem
+
+  protobuf:
+    run: once
+    desc: "Generate protobuf files"
+    cmds:
+      - buf lint
+      - buf build
+      - buf generate
+    sources:
+      - buf*.yaml
+      - proto/**/*
+    generates:
+      - gen/**/*.go
+  go-generate:
+    run: once
+    desc: "Run go generate"
+    cmds:
+      - go generate ./...
+  go-test:
+    desc: "Run go test"
+    cmds:
+      - go test ./...
+
+  build-dbrunner:
+    desc: "Build the dbrunner microservice"
+    deps: [protobuf, go-generate]
+    cmds:
+      - mkdir -p ./out
+      - go build -o ./out/dbrunner-service ./cmd/dbrunner-service/main.go
+    generates:
+      - out/dbrunner-service
+  build-gateway:
+    desc: "Build the gateway microservice"
+    deps: [protobuf, go-generate]
+    cmds:
+      - mkdir -p ./out
+      - go build -o ./out/gateway-service ./cmd/gateway-service/main.go
+    generates:
+      - out/gateway-service
+  build-question-manager:
+    desc: "Build the question-manager microservice"
+    deps: [protobuf, go-generate]
+    cmds:
+      - mkdir -p ./out
+      - go build -o ./out/question-manager-service ./cmd/question-manager-service/main.go
+    generates:
+      - out/question-manager-service
+
+  build:
+    desc: "Build the project"
+    deps: [build-dbrunner, build-gateway, build-question-manager]

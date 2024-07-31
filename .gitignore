@@ -12,3 +12,5 @@ devenv.local.nix
 gen/
 
 .env
+.task/
+out/
