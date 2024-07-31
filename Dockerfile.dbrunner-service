@@ -1,0 +1,15 @@
+FROM golang:1.22-alpine3.20 AS builder
+
+WORKDIR /app
+
+RUN apk add --no-cache buf go-task --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing/
+
+COPY go.mod go.sum /app/
+RUN go mod download
+
+COPY . /app/
+RUN go-task build-dbrunner
+
+FROM alpine:3.20
+COPY --from=builder /app/out/dbrunner-service /service
+CMD ["/service"]
