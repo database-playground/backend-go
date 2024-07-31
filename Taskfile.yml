@@ -59,7 +59,7 @@ tasks:
     desc: "Run go generate"
     cmds:
       - go generate ./...
-  go-test:
+  test:
     desc: "Run go test"
     cmds:
       - go test ./...
