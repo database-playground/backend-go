@@ -128,8 +128,8 @@ func (s *Server) GetQuestionsIdSolution(ctx context.Context, request openapi.Get
 
 // GetChallenge implements openapi.StrictServerInterface.
 func (s *Server) GetChallengesId(ctx context.Context, request openapi.GetChallengesIdRequestObject) (openapi.GetChallengesIdResponseObject, error) {
-	challengeID, err := converter.DecodeChallengeID(request.Id)
-	if err != nil || challengeID == "" {
+	tc, err := converter.DecodeChallengeID(request.Id)
+	if err != nil || tc == nil {
 		return openapi.GetChallengesId400JSONResponse{
 			BadRequestErrorJSONResponse: openapi.BadRequestErrorJSONResponse{
 				Message: "Invalid challenge ID.",
@@ -139,7 +139,7 @@ func (s *Server) GetChallengesId(ctx context.Context, request openapi.GetChallen
 
 	response, err := s.dbrunnerService.RetrieveQuery(ctx, &connect.Request[dbrunnerv1.RetrieveQueryRequest]{
 		Msg: &dbrunnerv1.RetrieveQueryRequest{
-			Id: challengeID,
+			Id: tc.ChallengeID,
 		},
 	})
 	if connect.CodeOf(err) == connect.CodeNotFound {
@@ -267,10 +267,88 @@ func (s *Server) PostChallenges(ctx context.Context, request openapi.PostChallen
 	}
 
 	// hash challenge ID so we can push it to URL
-	base64ChallengeID := converter.EncodeChallengeID(queryResponse.Msg.GetId())
+	base64ChallengeID := converter.EncodeChallengeID(converter.TransferableChallengeID{
+		QuestionID:  questionID,
+		ChallengeID: queryResponse.Msg.GetId(),
+	})
 
 	return openapi.PostChallenges200JSONResponse{
 		ChallengeID: base64ChallengeID,
+	}, nil
+}
+
+// GetChallengesIdCompare implements openapi.StrictServerInterface.
+func (s *Server) GetChallengesIdCompare(ctx context.Context, request openapi.GetChallengesIdCompareRequestObject) (openapi.GetChallengesIdCompareResponseObject, error) {
+	tc, err := converter.DecodeChallengeID(request.Id)
+	if err != nil || tc == nil {
+		return openapi.GetChallengesIdCompare400JSONResponse{
+			BadRequestErrorJSONResponse: openapi.BadRequestErrorJSONResponse{
+				Message: "Invalid challenge ID.",
+			},
+		}, nil
+	}
+
+	answer, err := s.questionManagerService.GetQuestionAnswer(ctx, &connect.Request[questionmanagerv1.GetQuestionAnswerRequest]{
+		Msg: &questionmanagerv1.GetQuestionAnswerRequest{
+			Id: tc.QuestionID,
+		},
+	})
+	if connect.CodeOf(err) == connect.CodeNotFound {
+		return openapi.GetChallengesIdCompare404JSONResponse{
+			NoSuchResourceErrorJSONResponse: openapi.NoSuchResourceErrorJSONResponse{
+				Message: "Answer not found.",
+			},
+		}, nil
+	}
+	if err != nil {
+		s.logger.ErrorContext(ctx, "Failed to fetch answer", slog.Any("error", err), slog.Any("request", request))
+		return openapi.GetChallengesIdCompare500JSONResponse{
+			ErrorJSONResponse: openapi.ErrorJSONResponse{
+				Message: "Failed to fetch answer.",
+			},
+		}, nil
+	}
+
+	answerResponse, err := s.dbrunnerService.RunQuery(ctx, &connect.Request[dbrunnerv1.RunQueryRequest]{
+		Msg: &dbrunnerv1.RunQueryRequest{
+			Schema: answer.Msg.QuestionAnswer.GetSchema(),
+			Query:  answer.Msg.QuestionAnswer.GetAnswer(),
+		},
+	})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", err), slog.Any("request", request))
+		return openapi.GetChallengesIdCompare500JSONResponse{
+			ErrorJSONResponse: openapi.ErrorJSONResponse{
+				Message: "Failed to execute answer. The answer is incorrect.",
+			},
+		}, nil
+	}
+	if answerResponse.Msg.GetError() != "" {
+		s.logger.ErrorContext(ctx, "Failed to execute answer", slog.Any("error", answerResponse.Msg.GetError()), slog.Any("request", request))
+		return openapi.GetChallengesIdCompare500JSONResponse{
+			ErrorJSONResponse: openapi.ErrorJSONResponse{
+				Message: "Failed to execute answer. The answer is incorrect.",
+			},
+		}, nil
+	}
+
+	sameResponse, err := s.dbrunnerService.AreQueriesOutputSame(ctx, &connect.Request[dbrunnerv1.AreQueriesOutputSameRequest]{
+		Msg: &dbrunnerv1.AreQueriesOutputSameRequest{
+			LeftId:  answerResponse.Msg.GetId(),
+			RightId: tc.ChallengeID,
+		},
+	})
+	if err != nil {
+		s.logger.ErrorContext(ctx, "Failed to compare answers", slog.Any("error", err), slog.Any("request", request))
+		return openapi.GetChallengesIdCompare500JSONResponse{
+			ErrorJSONResponse: openapi.ErrorJSONResponse{
+				Message: "Failed to compare answers.",
+			},
+		}, nil
+	}
+
+	return openapi.GetChallengesIdCompare200JSONResponse{
+		Same: sameResponse.Msg.GetSame(),
 	}, nil
 }
 

@@ -4,6 +4,7 @@ package converter
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"strconv"
 	"time"
 
@@ -50,14 +51,31 @@ func StringToID(in string) (int64, error) {
 	return strconv.ParseInt(in, 10, 64)
 }
 
-func EncodeChallengeID(in string) string {
-	return base64.URLEncoding.EncodeToString([]byte(in))
+type TransferableChallengeID struct {
+	QuestionID  int64  `json:"q"`
+	ChallengeID string `json:"c"`
 }
 
-func DecodeChallengeID(in string) (string, error) {
+func EncodeChallengeID(tc TransferableChallengeID) string {
+	b, err := json.Marshal(tc)
+	if err != nil {
+		return "<failed>"
+	}
+
+	return base64.URLEncoding.EncodeToString(b)
+}
+
+func DecodeChallengeID(in string) (*TransferableChallengeID, error) {
 	b, err := base64.URLEncoding.DecodeString(in)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	return string(b), nil
+
+	var tc TransferableChallengeID
+	err = json.Unmarshal(b, &tc)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tc, nil
 }

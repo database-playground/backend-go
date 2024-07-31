@@ -177,6 +177,39 @@ paths:
           $ref: "#/components/responses/NoSuchResourceError"
         "500":
           $ref: "#/components/responses/Error"
+  /challenges/{id}/compare:
+    get:
+      summary: Compare the result of a challenge with the answer
+      tags: [Challenges]
+      security:
+        - logto-jwt-token: ["challenge", "read:question"]
+      parameters:
+        - in: path
+          required: true
+          name: id
+          schema:
+            type: string
+          description: The ID of the challenge to compare the result of
+      responses:
+        "200":
+          description: The result of the comparison
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  same:
+                    type: boolean
+                required:
+                  - same
+        "400":
+          $ref: "#/components/responses/BadRequestError"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+        "404":
+          $ref: "#/components/responses/NoSuchResourceError"
+        "500":
+          $ref: "#/components/responses/Error"
   /schemas/{id}:
     get:
       summary: Get a schema by ID
