@@ -43,7 +43,7 @@
         redis.condition = "process_healthy";
       };
       readiness_probe = {
-        exec.command = "curl --cacert scripts/cert/ca-dev.pem --cert scripts/cert/client.pem --key scripts/cert/client-key.pem https://localhost:3000/healthz";
+        exec.command = "curl --cacert scripts/cert/ca-dev.pem --cert scripts/cert/client-dev.pem --key scripts/cert/client-dev-key.pem https://localhost:3000/healthz";
       };
       environment = [
         "PORT=3000"
@@ -57,7 +57,7 @@
         postgres.condition = "process_healthy";
       };
       readiness_probe = {
-        exec.command = "curl --cacert scripts/cert/ca-dev.pem --cert scripts/cert/client.pem --key scripts/cert/client-key.pem https://localhost:3001/healthz";
+        exec.command = "curl --cacert scripts/cert/ca-dev.pem --cert scripts/cert/client-dev.pem --key scripts/cert/client-dev-key.pem https://localhost:3001/healthz";
       };
       environment = [
         "PORT=3001"
