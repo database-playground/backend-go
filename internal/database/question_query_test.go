@@ -128,6 +128,7 @@ func TestGetQuestionAnswer(t *testing.T) {
 	require.NoError(t, err)
 	assert.EqualValues(t, 1, questionAnswer.ID)
 	assert.EqualValues(t, "SELECT * FROM products WHERE product_name = 'Laptop';", questionAnswer.Answer)
+	assert.Contains(t, questionAnswer.Schema, "CREATE TABLE products (")
 }
 
 func TestGetQuestionSolution(t *testing.T) {

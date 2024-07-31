@@ -49,8 +49,9 @@ func (db *Database) GetQuestionAnswer(ctx context.Context, questionID int64) (*m
 
 	err := pgxscan.Get(ctx, db.pool, &questionAnswer, `
 		--sql
-		SELECT question_id, answer
+		SELECT question_id, answer, initial_sql AS schema
 		FROM dp_questions
+		JOIN dp_schemas USING (schema_id)
 		WHERE question_id = $1;
 	`, questionID)
 	if err != nil {

@@ -50,6 +50,9 @@ type QuestionAnswer struct {
 
 	// Answer is the correct answer to the question.
 	Answer string `json:"answer"`
+
+	// Schema is the initial SQL schema of the answer.
+	Schema string `json:"schema"`
 }
 
 type QuestionSolution struct {

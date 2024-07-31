@@ -42,6 +42,7 @@ enum Difficulty {
 message QuestionAnswer {
     int64 id = 1;
     string answer = 2;
+    string schema = 3;
 }
 
 message QuestionSolution {
