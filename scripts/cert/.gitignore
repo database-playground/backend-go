@@ -1,2 +1,5 @@
 *.pem
 *.csr
+
+ca-csr*.json
+!ca-csr.dev.json
