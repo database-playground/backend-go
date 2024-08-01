@@ -8,8 +8,8 @@ COPY go.mod go.sum /app/
 RUN go mod download
 
 COPY . /app/
-RUN go-task build-gateway
+RUN go-task build-question-manager
 
 FROM alpine:3.20
-COPY --from=builder /app/out/gateway-service /service
+COPY --from=builder /app/out/question-manager-service /service
 CMD ["/service"]
