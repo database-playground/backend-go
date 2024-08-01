@@ -3,3 +3,9 @@
 
 ca-csr*.json
 !ca-csr.dev.json
+
+server*.json
+!server.dev.json
+
+client*.json
+!client.dev.json

@@ -8,4 +8,4 @@ if [ -z "$PROPERTY" ]; then
   exit 1
 fi
 
-cfssl gencert -ca="ca-$PROPERTY.pem" -ca-key="ca-$PROPERTY-key.pem" -config="ca-config.json" -profile=client client.json | cfssljson -bare "client-$PROPERTY"
+cfssl gencert -ca="ca-$PROPERTY.pem" -ca-key="ca-$PROPERTY-key.pem" -config="ca-config.json" -profile=client "client.${PROPERTY}.json" | cfssljson -bare "client-$PROPERTY"
